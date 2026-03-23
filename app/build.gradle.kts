@@ -37,7 +37,11 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.lifecycle.viewmodel)     // → sửa thành libs.lifecycle.viewmodel nếu alias là lifecycle-viewmodel
+    implementation(libs.lifecycle.livedata)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -50,6 +54,5 @@ dependencies {
 
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-
 
 }
