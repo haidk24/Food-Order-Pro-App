@@ -2,4 +2,20 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="background_gray">#F5F5F5</color>  <!-- Màu xám nhạt -->
+    <color name="text_primary">#212121</color>      <!-- Màu chữ đen chính -->
+    <color name="color_primary">#FF6200EE</color>    <!-- Màu tím chính -->
+    <color name="text_secondary">#757575</color>     <!-- Màu xám cho chữ phụ -->
+    <color name="border_color">#E0E0E0</color>
+    <color name="badge_blue_bg">#E6F1FB</color>
+    <color name="badge_blue_text">#0C447C</color>
+    <color name="badge_green_bg">#EAF3DE</color>
+    <color name="badge_green_text">#27500A</color>
+    <color name="badge_amber_bg">#FAEEDA</color>
+    <color name="badge_amber_text">#633806</color>
+    <color name="badge_red_bg">#FCEBEB</color>
+    <color name="badge_red_text">#791F1F</color>
+    <color name="badge_purple_bg">#EEEDFE</color>
+    <color name="badge_purple_text">#3C3489</color>
 </resources>

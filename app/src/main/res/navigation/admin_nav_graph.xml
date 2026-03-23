@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/admin_nav_graph"
+    app:startDestination="@id/nav_dashboard">
+
+    <fragment
+        android:id="@+id/nav_dashboard"
+        android:name="com.example.foodorderapp.ui.admin.DashboardFragment"
+        android:label="Tổng quan" />
+
+    <fragment
+        android:id="@+id/nav_restaurants"
+        android:name="com.example.foodorderapp.ui.admin.RestaurantApprovalFragment"
+        android:label="Nhà hàng" />
+
+    <fragment
+        android:id="@+id/nav_users"
+        android:name="com.example.foodorderapp.ui.admin.UserListFragment"
+        android:label="Users" />
+
+    <fragment
+        android:id="@+id/nav_report"
+        android:name="com.example.foodorderapp.ui.admin.ReportFragment"
+        android:label="Báo cáo" />
+
+</navigation>
