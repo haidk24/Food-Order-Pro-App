@@ -1,6 +1,7 @@
 package com.example.foodorderapp.ui;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -108,6 +109,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void performLogout() {
+        // 1. Xóa trạng thái đăng nhập trong Firebase
+        com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
+
+        // 2. Chuyển về màn hình SignInActivity
+        android.content.Intent intent = new Intent(this, com.example.foodorderapp.ui.SignInActivity.class);
+
+        // 3. QUAN TRỌNG: Xóa toàn bộ lịch sử các Activity trước đó
+        // Để người dùng không thể nhấn nút "Back" quay lại trang Admin/Main
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        startActivity(intent);
+        finish();
     }
 
     @Override

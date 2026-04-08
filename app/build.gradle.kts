@@ -3,9 +3,6 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
-if (file("google-services.json").exists()) {
-    apply(plugin = "com.google.gms.google-services")
-}
 
 android {
     namespace = "com.example.foodorderapp"
@@ -45,14 +42,15 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
+    implementation(libs.firebase.auth)
     implementation(libs.constraintlayout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-
-    implementation("com.google.firebase:firebase-auth")
+//    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+//    implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 
 }

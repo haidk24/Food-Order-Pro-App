@@ -12,12 +12,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.foodorderapp.R;
+import com.example.foodorderapp.data.model.User;
+import com.example.foodorderapp.ui.admin.AdminActivity;
 import com.example.foodorderapp.viewModel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -54,103 +54,68 @@ public class SignInActivity extends AppCompatActivity {
         findViewById(R.id.tvGoToSignUp).setOnClickListener(
                 v -> startActivity(new Intent(SignInActivity.this, SignUpActivity.class))
         );
-
-        btnGoogle.setOnClickListener(v -> Toast.makeText(
-                SignInActivity.this,
-                getString(R.string.social_not_ready),
-                Toast.LENGTH_SHORT
-        ).show());
-
-        btnFacebook.setOnClickListener(v -> Toast.makeText(
-                SignInActivity.this,
-                getString(R.string.social_not_ready),
-                Toast.LENGTH_SHORT
-        ).show());
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        try {
-            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                openMainAndFinish();
-            }
-        } catch (IllegalStateException ignored) {
-            // Firebase is optional in local/dev builds without google-services.json.
-        }
     }
 
     private void attemptSignIn() {
         String email = edtSignInEmail.getText() != null ? edtSignInEmail.getText().toString().trim() : "";
         String password = edtSignInPassword.getText() != null ? edtSignInPassword.getText().toString().trim() : "";
 
-        if (!isInputValid(email, password)) {
-            return;
-        }
+        if (!isInputValid(email, password)) return;
 
         setLoading(true);
+        // Đăng nhập thật từ Firebase
         authViewModel.login(email, password).addOnCompleteListener(task -> {
             setLoading(false);
             if (task.isSuccessful()) {
-                Toast.makeText(this, getString(R.string.signin_success), Toast.LENGTH_SHORT).show();
-                openMainAndFinish();
+                User user = task.getResult();
+                handleLoginSuccess(user);
             } else {
-                Toast.makeText(this, mapLoginError(task.getException()), Toast.LENGTH_LONG).show();
+                String error = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
             }
         });
     }
 
+    private void handleLoginSuccess(User user) {
+        if (user == null) {
+            Toast.makeText(this, "Không thể lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "Chào mừng " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+        
+        if ("admin".equals(user.getRole())) {
+            // Role Admin -> Vào trang quản trị
+            startActivity(new Intent(SignInActivity.this, AdminActivity.class));
+        } else {
+            // Role khác (customer, shipper...) -> Vào trang chủ chính
+            startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        }
+        finish();
+    }
+
     private boolean isInputValid(String email, String password) {
         if (email.isEmpty()) {
-            edtSignInEmail.setError(getString(R.string.error_email_required));
-            edtSignInEmail.requestFocus();
+            edtSignInEmail.setError("Vui lòng nhập email");
             return false;
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            edtSignInEmail.setError(getString(R.string.error_email_invalid));
-            edtSignInEmail.requestFocus();
-            return false;
-        }
-        if (password.isEmpty()) {
-            edtSignInPassword.setError(getString(R.string.error_password_required));
-            edtSignInPassword.requestFocus();
+            edtSignInEmail.setError("Email không hợp lệ");
             return false;
         }
         if (password.length() < 6) {
-            edtSignInPassword.setError(getString(R.string.error_password_min_length));
-            edtSignInPassword.requestFocus();
+            edtSignInPassword.setError("Mật khẩu tối thiểu 6 ký tự");
             return false;
         }
         return true;
     }
 
-    private String mapLoginError(Exception exception) {
-        if (exception instanceof FirebaseAuthException) {
-            String code = ((FirebaseAuthException) exception).getErrorCode();
-            if ("ERROR_INVALID_CREDENTIAL".equals(code)
-                    || "ERROR_WRONG_PASSWORD".equals(code)
-                    || "ERROR_USER_NOT_FOUND".equals(code)
-                    || "ERROR_INVALID_LOGIN_CREDENTIALS".equals(code)) {
-                return getString(R.string.error_login_invalid_credentials);
-            }
-            if ("ERROR_TOO_MANY_REQUESTS".equals(code)) {
-                return getString(R.string.error_too_many_requests);
-            }
-        }
-        return exception != null && exception.getMessage() != null
-                ? exception.getMessage()
-                : getString(R.string.error_login_failed);
-    }
-
     private void setLoading(boolean isLoading) {
-        signInProgress.setVisibility(isLoading ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (signInProgress != null) {
+            signInProgress.setVisibility(isLoading ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
         btnFacebook.setEnabled(!isLoading);
-    }
-
-    private void openMainAndFinish() {
-        startActivity(new Intent(SignInActivity.this, MainActivity.class));
-        finish();
     }
 }
