@@ -42,7 +42,7 @@ public class AuthFirebaseDataSource {
 
                         // 2. lấy uid
                         String uid = auth.getCurrentUser().getUid();
-                        user.setId(uid);
+                        user.setUid(uid);
 
                         // 3. lưu user vào Firestore
                         db.collection("users")

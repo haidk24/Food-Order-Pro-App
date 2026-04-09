@@ -1,26 +1,31 @@
 package com.example.foodorderapp.data.model;
 
 public class User {
-    private String id;
-    private String name;
+    private String uid;
+    private String displayName;
     private String email;
     private String phone;
-    private String role;
+    private String role;       // customer | restaurant | shipper | admin
+    private String status;     // active | banned
+    private int orderCount;
 
-    public String getId() {
-        return id;
+    public User() {
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getUid() {
+        return uid;
     }
 
-    public String getName() {
-        return name;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getEmail() {
@@ -30,7 +35,6 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-
 
     public String getPhone() {
         return phone;
@@ -46,5 +50,21 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getOrderCount() {
+        return orderCount;
+    }
+
+    public void setOrderCount(int orderCount) {
+        this.orderCount = orderCount;
     }
 }

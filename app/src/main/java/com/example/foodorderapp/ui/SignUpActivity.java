@@ -72,10 +72,12 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void createAccountInFirebase(String email, String password, String fullName) {
         User user = new User();
-        user.setName(fullName);
+        user.setDisplayName(fullName);
         user.setEmail(email);
         user.setPhone("");
         user.setRole("customer");
+        user.setStatus("active");
+        user.setOrderCount(0);
 
         btnSignUp.setEnabled(false);
         authViewModel.register(email, password, user).addOnCompleteListener(task -> {
