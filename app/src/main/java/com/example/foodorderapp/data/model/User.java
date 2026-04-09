@@ -12,6 +12,16 @@ public class User {
     public User() {
     }
 
+    public User(String uid, String displayName, String email, String phone, String role, String status, int orderCount) {
+        this.uid = uid;
+        this.displayName = displayName;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.status = status;
+        this.orderCount = orderCount;
+    }
+
     public String getUid() {
         return uid;
     }
