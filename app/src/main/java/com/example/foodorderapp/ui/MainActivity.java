@@ -1,5 +1,6 @@
 package com.example.foodorderapp.ui;
 
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -35,10 +36,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -63,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else if (id == R.id.nav_myorder) {
                 replaceFragment(new MyOrderFragment());
                 navigationView.setCheckedItem(R.id.nav_myorder);
+            } else if (id == R.id.nav_logout) {
+                // Xử lý logout
+                navigationView.setCheckedItem(R.id.nav_logout);
             }
             return true;
         });
@@ -75,12 +75,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         
     }
-
-
-
-
-
-
     private void replaceFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content_frame, fragment);

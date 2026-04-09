@@ -48,12 +48,12 @@ public class SignUpActivity extends AppCompatActivity {
 
         findViewById(R.id.btnGoogle).setOnClickListener(v -> Toast.makeText(
                 SignUpActivity.this,
-                getString(R.string.social_not_ready),
+                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
                 Toast.LENGTH_SHORT
         ).show());
         findViewById(R.id.btnFacebook).setOnClickListener(v -> Toast.makeText(
                 SignUpActivity.this,
-                getString(R.string.social_not_ready),
+                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
                 Toast.LENGTH_SHORT
         ).show());
     }
@@ -108,13 +108,13 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         if (password.isEmpty()) {
-            edtPassword.setError("Không được để trống password");
+            edtPassword.setError("Không được để trống mật khẩu");
             edtPassword.requestFocus();
             return false;
         }
 
         if (confirmPassword.isEmpty()) {
-            edtConfirmPassword.setError("Không được để trống confirm password");
+            edtConfirmPassword.setError("Không được để trống xác nhận mật khẩu");
             edtConfirmPassword.requestFocus();
             return false;
         }
@@ -125,7 +125,7 @@ public class SignUpActivity extends AppCompatActivity {
             return false;
         }
         if (password.length() < 6) {
-            edtPassword.setError("Password phải >= 6 ký tự");
+            edtPassword.setError("Mật khẩu phải >= 6 ký tự");
             edtPassword.requestFocus();
             return false;
         }

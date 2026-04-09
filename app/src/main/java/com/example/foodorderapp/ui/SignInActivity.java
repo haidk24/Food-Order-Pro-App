@@ -57,13 +57,13 @@ public class SignInActivity extends AppCompatActivity {
 
         btnGoogle.setOnClickListener(v -> Toast.makeText(
                 SignInActivity.this,
-                getString(R.string.social_not_ready),
+                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
                 Toast.LENGTH_SHORT
         ).show());
 
         btnFacebook.setOnClickListener(v -> Toast.makeText(
                 SignInActivity.this,
-                getString(R.string.social_not_ready),
+                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
                 Toast.LENGTH_SHORT
         ).show());
     }
@@ -92,7 +92,7 @@ public class SignInActivity extends AppCompatActivity {
         authViewModel.login(email, password).addOnCompleteListener(task -> {
             setLoading(false);
             if (task.isSuccessful()) {
-                Toast.makeText(this, getString(R.string.signin_success), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
                 openMainAndFinish();
             } else {
                 Toast.makeText(this, mapLoginError(task.getException()), Toast.LENGTH_LONG).show();
@@ -102,22 +102,22 @@ public class SignInActivity extends AppCompatActivity {
 
     private boolean isInputValid(String email, String password) {
         if (email.isEmpty()) {
-            edtSignInEmail.setError(getString(R.string.error_email_required));
+            edtSignInEmail.setError("Không được để trống email");
             edtSignInEmail.requestFocus();
             return false;
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            edtSignInEmail.setError(getString(R.string.error_email_invalid));
+            edtSignInEmail.setError("Email không hợp lệ");
             edtSignInEmail.requestFocus();
             return false;
         }
         if (password.isEmpty()) {
-            edtSignInPassword.setError(getString(R.string.error_password_required));
+            edtSignInPassword.setError("Không được để trống mật khẩu");
             edtSignInPassword.requestFocus();
             return false;
         }
         if (password.length() < 6) {
-            edtSignInPassword.setError(getString(R.string.error_password_min_length));
+            edtSignInPassword.setError("Mật khẩu phải >= 6 ký tự");
             edtSignInPassword.requestFocus();
             return false;
         }
@@ -127,19 +127,19 @@ public class SignInActivity extends AppCompatActivity {
     private String mapLoginError(Exception exception) {
         if (exception instanceof FirebaseAuthException) {
             String code = ((FirebaseAuthException) exception).getErrorCode();
-            if ("ERROR_INVALID_CREDENTIAL".equals(code)
-                    || "ERROR_WRONG_PASSWORD".equals(code)
-                    || "ERROR_USER_NOT_FOUND".equals(code)
-                    || "ERROR_INVALID_LOGIN_CREDENTIALS".equals(code)) {
-                return getString(R.string.error_login_invalid_credentials);
+            if ("ERROR_INVALID_CREDENTIAL".equals(code) ||
+                    "ERROR_WRONG_PASSWORD".equals(code) ||
+                    "ERROR_USER_NOT_FOUND".equals(code) ||
+                    "ERROR_INVALID_LOGIN_CREDENTIALS".equals(code)) {
+                return "Email hoặc mật khẩu chưa đúng";
             }
             if ("ERROR_TOO_MANY_REQUESTS".equals(code)) {
-                return getString(R.string.error_too_many_requests);
+                return "Bạn đã thử quá nhiều lần, vui lòng thử lại sau";
             }
         }
         return exception != null && exception.getMessage() != null
                 ? exception.getMessage()
-                : getString(R.string.error_login_failed);
+                : "Đăng nhập thất bại, vui lòng thử lại";
     }
 
     private void setLoading(boolean isLoading) {

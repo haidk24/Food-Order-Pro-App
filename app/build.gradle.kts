@@ -50,6 +50,7 @@ dependencies {
 
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-
+    implementation("me.relex:circleindicator:2.1.6")
+    implementation("com.github.bumptech.glide:glide:5.0.5")
 
 }
