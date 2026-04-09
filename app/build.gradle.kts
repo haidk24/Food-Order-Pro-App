@@ -37,11 +37,17 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.lifecycle.viewmodel)     // → sửa thành libs.lifecycle.viewmodel nếu alias là lifecycle-viewmodel
+    implementation(libs.lifecycle.livedata)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
+    implementation(libs.firebase.auth)
     implementation(libs.constraintlayout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -52,5 +58,6 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("me.relex:circleindicator:2.1.6")
     implementation("com.github.bumptech.glide:glide:5.0.5")
+
 
 }

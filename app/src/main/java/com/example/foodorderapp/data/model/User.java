@@ -67,4 +67,7 @@ public class User {
     public void setOrderCount(int orderCount) {
         this.orderCount = orderCount;
     }
+    public boolean isBanned() {
+        return "banned".equals(status);
+    }
 }

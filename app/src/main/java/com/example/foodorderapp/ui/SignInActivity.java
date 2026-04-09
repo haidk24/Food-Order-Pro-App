@@ -12,6 +12,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.foodorderapp.R;
+import com.example.foodorderapp.data.model.User;
+import com.example.foodorderapp.ui.admin.AdminActivity;
 import com.example.foodorderapp.viewModel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -84,20 +86,38 @@ public class SignInActivity extends AppCompatActivity {
         String email = edtSignInEmail.getText() != null ? edtSignInEmail.getText().toString().trim() : "";
         String password = edtSignInPassword.getText() != null ? edtSignInPassword.getText().toString().trim() : "";
 
-        if (!isInputValid(email, password)) {
-            return;
-        }
+        if (!isInputValid(email, password)) return;
 
         setLoading(true);
+        // Đăng nhập thật từ Firebase
         authViewModel.login(email, password).addOnCompleteListener(task -> {
             setLoading(false);
             if (task.isSuccessful()) {
                 Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
                 openMainAndFinish();
             } else {
-                Toast.makeText(this, mapLoginError(task.getException()), Toast.LENGTH_LONG).show();
+                String error = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void handleLoginSuccess(User user) {
+        if (user == null) {
+            Toast.makeText(this, "Không thể lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "Chào mừng " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+
+        if ("admin".equals(user.getRole())) {
+            // Role Admin -> Vào trang quản trị
+            startActivity(new Intent(SignInActivity.this, AdminActivity.class));
+        } else {
+            // Role khác (customer, shipper...) -> Vào trang chủ chính
+            startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        }
+        finish();
     }
 
     private boolean isInputValid(String email, String password) {
@@ -124,26 +144,10 @@ public class SignInActivity extends AppCompatActivity {
         return true;
     }
 
-    private String mapLoginError(Exception exception) {
-        if (exception instanceof FirebaseAuthException) {
-            String code = ((FirebaseAuthException) exception).getErrorCode();
-            if ("ERROR_INVALID_CREDENTIAL".equals(code) ||
-                    "ERROR_WRONG_PASSWORD".equals(code) ||
-                    "ERROR_USER_NOT_FOUND".equals(code) ||
-                    "ERROR_INVALID_LOGIN_CREDENTIALS".equals(code)) {
-                return "Email hoặc mật khẩu chưa đúng";
-            }
-            if ("ERROR_TOO_MANY_REQUESTS".equals(code)) {
-                return "Bạn đã thử quá nhiều lần, vui lòng thử lại sau";
-            }
-        }
-        return exception != null && exception.getMessage() != null
-                ? exception.getMessage()
-                : "Đăng nhập thất bại, vui lòng thử lại";
-    }
-
     private void setLoading(boolean isLoading) {
-        signInProgress.setVisibility(isLoading ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (signInProgress != null) {
+            signInProgress.setVisibility(isLoading ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
         btnFacebook.setEnabled(!isLoading);

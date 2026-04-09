@@ -18,15 +18,15 @@ public class AuthFirebaseDataSource {
         try {
             authInstance = FirebaseAuth.getInstance();
             dbInstance = FirebaseFirestore.getInstance();
-        } catch (IllegalStateException ex) {
+        } catch (Exception ignored) {
             authInstance = null;
             dbInstance = null;
         }
+        
         auth = authInstance;
         db = dbInstance;
     }
 
-    // ================= REGISTER =================
     public Task<Void> register(String email, String password, User user) {
         if (auth == null || db == null) {
             return Tasks.forException(new IllegalStateException("Firebase chua duoc cau hinh. Vui long them google-services.json"));
