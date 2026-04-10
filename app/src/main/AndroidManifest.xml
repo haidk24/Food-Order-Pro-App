@@ -29,6 +29,9 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activity.FoodDetailActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.admin.AdminActivity"

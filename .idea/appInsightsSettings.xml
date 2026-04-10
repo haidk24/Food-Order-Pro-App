@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.foodorderapp" />
-                  <option name="mobileSdkAppId" value="1:501084068978:android:a8e1b865d63e2ea8fcb6eb" />
-                  <option name="projectId" value="test-firebase-2d44b" />
-                  <option name="projectNumber" value="501084068978" />
+                  <option name="mobileSdkAppId" value="1:171195324246:android:7ef0c93f8c97e14280a8f7" />
+                  <option name="projectId" value="food-order-app-e9a35" />
+                  <option name="projectNumber" value="171195324246" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
