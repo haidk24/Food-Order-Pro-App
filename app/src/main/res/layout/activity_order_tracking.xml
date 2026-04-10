@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F9F9F9">
+
+    <TextView
+        android:id="@+id/tvOrderTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Theo dõi đơn #..."
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#000000"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
+
+        <fragment
+            android:id="@+id/mapFragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/tvStatusConfirmed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Đơn đã xác nhận"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvStatusPreparing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Đang chuẩn bị món"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvStatusShipping"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Đang giao..."
+        android:layout_marginTop="8dp"
+        android:textColor="#1A73E8"
+        android:textStyle="bold"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvStatusDelivered"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Đã giao thành công"
+        android:layout_marginTop="8dp"
+        android:textColor="#9E9E9E"
+        android:textSize="16sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tvDriverName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tài xế: Đang tìm..."
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/tvEstimatedTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ước tính: -- phút"
+        android:textColor="#666666"
+        android:textSize="14sp"/>
+
+</LinearLayout>

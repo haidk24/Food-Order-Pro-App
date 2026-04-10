@@ -18,6 +18,8 @@ import com.example.foodorderapp.viewModel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -54,6 +56,30 @@ public class SignInActivity extends AppCompatActivity {
         findViewById(R.id.tvGoToSignUp).setOnClickListener(
                 v -> startActivity(new Intent(SignInActivity.this, SignUpActivity.class))
         );
+
+        btnGoogle.setOnClickListener(v -> Toast.makeText(
+                SignInActivity.this,
+                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
+                Toast.LENGTH_SHORT
+        ).show());
+
+        btnFacebook.setOnClickListener(v -> Toast.makeText(
+                SignInActivity.this,
+                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
+                Toast.LENGTH_SHORT
+        ).show());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                openMainAndFinish();
+            }
+        } catch (IllegalStateException ignored) {
+            // Firebase is optional in local/dev builds without google-services.json.
+        }
     }
 
     private void attemptSignIn() {
@@ -67,8 +93,8 @@ public class SignInActivity extends AppCompatActivity {
         authViewModel.login(email, password).addOnCompleteListener(task -> {
             setLoading(false);
             if (task.isSuccessful()) {
-                User user = task.getResult();
-                handleLoginSuccess(user);
+                Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                openMainAndFinish();
             } else {
                 String error = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
@@ -83,7 +109,7 @@ public class SignInActivity extends AppCompatActivity {
         }
 
         Toast.makeText(this, "Chào mừng " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
-        
+
         if ("admin".equals(user.getRole())) {
             // Role Admin -> Vào trang quản trị
             startActivity(new Intent(SignInActivity.this, AdminActivity.class));
@@ -96,15 +122,23 @@ public class SignInActivity extends AppCompatActivity {
 
     private boolean isInputValid(String email, String password) {
         if (email.isEmpty()) {
-            edtSignInEmail.setError("Vui lòng nhập email");
+            edtSignInEmail.setError("Không được để trống email");
+            edtSignInEmail.requestFocus();
             return false;
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             edtSignInEmail.setError("Email không hợp lệ");
+            edtSignInEmail.requestFocus();
+            return false;
+        }
+        if (password.isEmpty()) {
+            edtSignInPassword.setError("Không được để trống mật khẩu");
+            edtSignInPassword.requestFocus();
             return false;
         }
         if (password.length() < 6) {
-            edtSignInPassword.setError("Mật khẩu tối thiểu 6 ký tự");
+            edtSignInPassword.setError("Mật khẩu phải >= 6 ký tự");
+            edtSignInPassword.requestFocus();
             return false;
         }
         return true;
@@ -117,5 +151,10 @@ public class SignInActivity extends AppCompatActivity {
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
         btnFacebook.setEnabled(!isLoading);
+    }
+
+    private void openMainAndFinish() {
+        startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        finish();
     }
 }
