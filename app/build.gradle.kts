@@ -59,5 +59,10 @@ dependencies {
     implementation("me.relex:circleindicator:2.1.6")
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
-
+    // ViewModel & LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.6.2")
+// Google Maps
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }
