@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_gray">
+    android:background="#F2F2F7">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,127 +11,127 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Loading indicator -->
+        <!-- Loading -->
         <ProgressBar
             android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
             android:visibility="gone" />
 
-        <!-- Metric cards: 2 x 2 grid -->
+        <!-- Header -->
+        <TextView
+            android:text="Tổng quan hôm nay"
+            android:textSize="13sp"
+            android:textColor="#8A8A8E"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Row 1: Người dùng + Nhà hàng -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="10dp">
 
-            <!-- Người dùng -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
+            <LinearLayout android:id="@+id/card_users"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical"
                 android:background="@drawable/bg_card"
-                android:padding="14dp"
-                android:layout_marginEnd="6dp">
-                <TextView
-                    android:text="Người dùng"
-                    android:textSize="11sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:id="@+id/tv_total_users"
-                    android:text="..."
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                android:padding="14dp" android:layout_marginEnd="6dp">
+                <TextView android:text="Người dùng"
+                    android:textSize="11sp" android:textColor="#8A8A8E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_total_users"
+                    android:text="—" android:textSize="28sp"
+                    android:textStyle="bold" android:textColor="#1C1C1E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
+                <TextView android:id="@+id/tv_shipper_count"
+                    android:text="—"
+                    android:textSize="11sp" android:textColor="#8A8A8E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
 
-            <!-- Nhà hàng -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
+            <LinearLayout android:id="@+id/card_restaurants"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical"
                 android:background="@drawable/bg_card"
-                android:padding="14dp"
-                android:layout_marginStart="6dp">
-                <TextView
-                    android:text="Nhà hàng"
-                    android:textSize="11sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:id="@+id/tv_total_restaurants"
-                    android:text="..."
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                android:padding="14dp" android:layout_marginStart="6dp">
+                <TextView android:text="Nhà hàng"
+                    android:textSize="11sp" android:textColor="#8A8A8E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_total_restaurants"
+                    android:text="—" android:textSize="28sp"
+                    android:textStyle="bold" android:textColor="#1C1C1E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
+                <TextView android:id="@+id/tv_pending_badge"
+                    android:text="—"
+                    android:textSize="11sp" android:textColor="#FF9500"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Row 2: Đơn hàng + Doanh thu -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-            <!-- Đơn hôm nay -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
+            <LinearLayout android:id="@+id/card_orders"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical"
                 android:background="@drawable/bg_card"
-                android:padding="14dp"
-                android:layout_marginEnd="6dp">
-                <TextView
-                    android:text="Đơn hôm nay"
-                    android:textSize="11sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:id="@+id/tv_total_orders"
-                    android:text="..."
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                android:padding="14dp" android:layout_marginEnd="6dp">
+                <TextView android:text="Đơn hôm nay"
+                    android:textSize="11sp" android:textColor="#8A8A8E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_total_orders"
+                    android:text="—" android:textSize="28sp"
+                    android:textStyle="bold" android:textColor="#1C1C1E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
+                <TextView android:id="@+id/tv_orders_note"
+                    android:text="Đã giao thành công"
+                    android:textSize="11sp" android:textColor="#34C759"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
 
-            <!-- Doanh thu -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
+            <LinearLayout android:id="@+id/card_revenue"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical"
                 android:background="@drawable/bg_card"
-                android:padding="14dp"
-                android:layout_marginStart="6dp">
-                <TextView
-                    android:text="Doanh thu"
-                    android:textSize="11sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:id="@+id/tv_revenue"
-                    android:text="..."
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/color_primary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                android:padding="14dp" android:layout_marginStart="6dp">
+                <TextView android:text="Doanh thu"
+                    android:textSize="11sp" android:textColor="#8A8A8E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_revenue"
+                    android:text="—" android:textSize="24sp"
+                    android:textStyle="bold" android:textColor="#007AFF"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
+                <TextView android:id="@+id/tv_revenue_note"
+                    android:text="Từ đơn delivered"
+                    android:textSize="11sp" android:textColor="#8A8A8E"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
         </LinearLayout>
+
+        <!-- Nút Làm mới -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Làm mới dữ liệu"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
     </LinearLayout>
 </ScrollView>

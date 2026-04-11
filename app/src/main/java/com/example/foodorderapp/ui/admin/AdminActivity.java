@@ -11,6 +11,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.foodorderapp.R;
+import com.example.foodorderapp.viewModel.AdminViewModel;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -50,24 +51,15 @@ public class AdminActivity extends AppCompatActivity {
     private void setupNavigation() {
         bottomNav = findViewById(R.id.admin_bottom_nav);
 
-        // --- CODE CŨ (Gây crash do trùng tên NavHostFragment) ---
-        /*
-        NavHostFragment navHost = (NavHostFragment)
-                getSupportFragmentManager().findFragmentById(R.id.admin_nav_host);
-        */
-
-        // --- CODE MỚI: Chỉ định rõ package của thư viện Navigation để tránh ClassCastException ---
         androidx.fragment.app.Fragment navHostFragment = getSupportFragmentManager()
                 .findFragmentById(R.id.admin_nav_host);
 
         if (navHostFragment instanceof NavHostFragment) {
             navController = ((NavHostFragment) navHostFragment).getNavController();
             
-            // Kết nối BottomNavigationView với NavController
             if (bottomNav != null && navController != null) {
                 NavigationUI.setupWithNavController(bottomNav, navController);
 
-                // Cập nhật Toolbar title theo tab đang chọn
                 navController.addOnDestinationChangedListener((controller, destination, args) -> {
                     if (getSupportActionBar() != null) {
                         getSupportActionBar().setTitle(destination.getLabel());
@@ -75,16 +67,16 @@ public class AdminActivity extends AppCompatActivity {
                 });
             }
         } else {
-            // Log lỗi nếu không tìm thấy NavHostFragment đúng loại
             Toast.makeText(this, "Lỗi: Không tìm thấy Navigation Host", Toast.LENGTH_LONG).show();
         }
     }
 
     private void checkAdminRole() {
         viewModel.getCurrentUserRole().observe(this, role -> {
-            if (role == null || !role.equals("admin")) {
-                // Tạm thời log để test
-                android.util.Log.w("AdminActivity", "User không phải admin, role = " + role);
+            // Nếu role đã trả về (không null) và không phải admin
+            if (role != null && !role.equals("admin")) {
+                Toast.makeText(this, "Bạn không có quyền truy cập khu vực Quản trị!", Toast.LENGTH_LONG).show();
+                finish(); // Đóng màn hình Admin
             }
         });
     }

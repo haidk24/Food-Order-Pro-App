@@ -1,11 +1,9 @@
 package com.example.foodorderapp.ui.admin.adapter;
 
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,129 +14,99 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.foodorderapp.R;
 import com.example.foodorderapp.data.model.User;
 
-public class UserAdapter extends ListAdapter<User, UserAdapter.UserViewHolder> {
+public class UserAdapter extends ListAdapter<User, UserAdapter.VH> {
 
-    // Callback xử lý sự kiện ban/unban
-    public interface OnUserActionListener {
-        void onToggleBan(User user);
-    }
+    public interface OnUserClick { void onClick(User user); }
 
-    private final OnUserActionListener listener;
+    private final OnUserClick listener;
 
-    public UserAdapter(OnUserActionListener listener) {
-        super(DIFF_CALLBACK);
+    public UserAdapter(OnUserClick listener) {
+        super(new DiffUtil.ItemCallback<User>() {
+            @Override public boolean areItemsTheSame(@NonNull User a, @NonNull User b) {
+                return a.getUid().equals(b.getUid());
+            }
+            @Override public boolean areContentsTheSame(@NonNull User a, @NonNull User b) {
+                return a.getUid().equals(b.getUid())
+                        && safeEqual(a.getDisplayName(), b.getDisplayName())
+                        && safeEqual(a.getRole(), b.getRole())
+                        && safeEqual(a.getStatus(), b.getStatus());
+            }
+            private boolean safeEqual(String a, String b) {
+                if (a == null && b == null) return true;
+                if (a == null || b == null) return false;
+                return a.equals(b);
+            }
+        });
         this.listener = listener;
     }
 
-    // DiffUtil tự động animate thay đổi list
-    private static final DiffUtil.ItemCallback<User> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<User>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull User a, @NonNull User b) {
-                    return a.getUid().equals(b.getUid());
-                }
-                @Override
-                public boolean areContentsTheSame(@NonNull User a, @NonNull User b) {
-                    return a.getStatus().equals(b.getStatus())
-                            && a.getDisplayName().equals(b.getDisplayName());
-                }
-            };
-
-    @NonNull
-    @Override
-    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+    @NonNull @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_user, parent, false);
-        return new UserViewHolder(view);
+        return new VH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        holder.bind(getItem(position), listener);
+    public void onBindViewHolder(@NonNull VH h, int pos) {
+        h.bind(getItem(pos), listener);
     }
 
     // ── ViewHolder ────────────────────────────────────────────────
-    static class UserViewHolder extends RecyclerView.ViewHolder {
+    static class VH extends RecyclerView.ViewHolder {
 
-        private final TextView tvAvatar, tvName, tvEmail;
-        private final TextView tvPhone, tvOrderCount;
-        private final TextView tvRoleBadge, tvStatusBadge;
-        private final Button btnToggleBan;
+        final TextView tvInitials, tvName, tvEmail,
+                tvRole, tvOrderCount, tvStatus;
 
-        public UserViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvAvatar      = itemView.findViewById(R.id.tv_avatar);
-            tvName        = itemView.findViewById(R.id.tv_name);
-            tvEmail       = itemView.findViewById(R.id.tv_email);
-            tvPhone       = itemView.findViewById(R.id.tv_phone);
-            tvOrderCount  = itemView.findViewById(R.id.tv_order_count);
-            tvRoleBadge   = itemView.findViewById(R.id.tv_role_badge);
-            tvStatusBadge = itemView.findViewById(R.id.tv_status_badge);
-            btnToggleBan  = itemView.findViewById(R.id.btn_toggle_ban);
+        VH(View v) {
+            super(v);
+            tvInitials   = v.findViewById(R.id.tv_initials);
+            tvName       = v.findViewById(R.id.tv_user_name);
+            tvEmail      = v.findViewById(R.id.tv_user_email);
+            tvRole       = v.findViewById(R.id.tv_user_role);
+            tvOrderCount = v.findViewById(R.id.tv_order_count);
+            tvStatus     = v.findViewById(R.id.tv_user_status);
         }
 
-        public void bind(User user, OnUserActionListener listener) {
-            // Avatar: lấy 2 ký tự đầu tên
-            String name = user.getDisplayName();
-            tvAvatar.setText(getInitials(name));
-            tvName.setText(name);
-            tvEmail.setText(user.getEmail());
-            tvPhone.setText(user.getPhone());
-            tvOrderCount.setText(user.getOrderCount() + " đơn");
+        void bind(User user, OnUserClick listener) {
+            tvInitials.setText(initials(user.getDisplayName()));
+            tvName.setText(user.getDisplayName() != null ? user.getDisplayName() : "—");
+            tvEmail.setText(user.getEmail() != null ? user.getEmail() : "—");
+            tvRole.setText(mapRole(user.getRole()));
+            tvOrderCount.setText((user.getOrderCount() > 0 ? user.getOrderCount() : 0) + " đơn");
 
-            // Badge role
-            bindRoleBadge(user.getRole());
-
-            // Badge status + nút hành động
-            bindStatus(user.isBanned());
-
-            // Click nút Khóa / Mở khóa
-            btnToggleBan.setOnClickListener(v -> listener.onToggleBan(user));
-        }
-
-        private void bindRoleBadge(String role) {
-            Context ctx = itemView.getContext();
-            switch (role) {
-                case "restaurant":
-                    tvRoleBadge.setText("Nhà hàng");
-                    tvRoleBadge.setBackgroundResource(R.drawable.bg_badge_green);
-                    break;
-                case "shipper":
-                    tvRoleBadge.setText("Shipper");
-                    tvRoleBadge.setBackgroundResource(R.drawable.bg_badge_amber);
-                    break;
-                case "admin":
-                    tvRoleBadge.setText("Admin");
-                    tvRoleBadge.setBackgroundResource(R.drawable.bg_badge_purple);
-                    break;
-                default: // customer
-                    tvRoleBadge.setText("Khách hàng");
-                    tvRoleBadge.setBackgroundResource(R.drawable.bg_badge_blue);
-                    break;
-            }
-        }
-
-        private void bindStatus(boolean isBanned) {
-            if (isBanned) {
-                tvStatusBadge.setText("Bị khóa");
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_badge_red);
-                btnToggleBan.setText("Mở khóa");
+            // Màu trạng thái
+            if ("banned".equals(user.getStatus())) {
+                tvStatus.setText("Bị khóa");
+                tvStatus.setTextColor(0xFFFF3B30);
             } else {
-                tvStatusBadge.setText("Hoạt động");
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_badge_green);
-                btnToggleBan.setText("Khóa");
+                tvStatus.setText("Hoạt động");
+                tvStatus.setTextColor(0xFF34C759);
             }
+
+            itemView.setOnClickListener(v -> listener.onClick(user));
         }
 
-        private String getInitials(String name) {
-            if (name == null || name.isEmpty()) return "?";
+        // "Nguyễn Văn Minh" → "NM"
+        private String initials(String name) {
+            if (name == null || name.trim().isEmpty()) return "?";
             String[] parts = name.trim().split("\\s+");
-            if (parts.length >= 2) {
-                // Lấy chữ cái đầu của từ đầu và từ cuối
-                return String.valueOf(parts[0].charAt(0)).toUpperCase()
-                        + String.valueOf(parts[parts.length - 1].charAt(0)).toUpperCase();
+            if (parts.length == 1)
+                return String.valueOf(parts[0].charAt(0)).toUpperCase();
+            return (String.valueOf(parts[0].charAt(0))
+                    + String.valueOf(parts[parts.length - 1].charAt(0)))
+                    .toUpperCase();
+        }
+
+        private String mapRole(String role) {
+            if (role == null) return "—";
+            switch (role) {
+                case "customer":   return "Khách hàng";
+                case "restaurant": return "Nhà hàng";
+                case "shipper":    return "Shipper";
+                case "admin":      return "Admin";
+                default:           return role;
             }
-            return String.valueOf(parts[0].charAt(0)).toUpperCase();
         }
     }
 }
