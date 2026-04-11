@@ -1,17 +1,17 @@
 package com.example.foodorderapp.data.model;
 
 public class AdminStats {
-    public int totalUsers;
-    public int totalRestaurants;
-    public int totalOrdersToday;
+    public long totalUsers;
+    public long totalRestaurants;
+    public long totalOrdersToday;
     public long revenueToday;
-    public int pendingRestaurants;
+    public long pendingRestaurants;
 
     public AdminStats() {}
 
-    public AdminStats(int totalUsers, int totalRestaurants,
-                      int totalOrdersToday, long revenueToday,
-                      int pendingRestaurants) {
+    public AdminStats(long totalUsers, long totalRestaurants,
+                      long totalOrdersToday, long revenueToday,
+                      long pendingRestaurants) {
         this.totalUsers = totalUsers;
         this.totalRestaurants = totalRestaurants;
         this.totalOrdersToday = totalOrdersToday;

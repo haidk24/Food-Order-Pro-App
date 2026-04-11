@@ -5,24 +5,48 @@
     android:id="@+id/admin_nav_graph"
     app:startDestination="@id/nav_dashboard">
 
-    <fragment
-        android:id="@+id/nav_dashboard"
+    <fragment android:id="@+id/nav_dashboard"
         android:name="com.example.foodorderapp.ui.admin.DashboardFragment"
-        android:label="Tổng quan" />
+        android:label="Tổng quan"/>
 
-    <fragment
-        android:id="@+id/nav_restaurants"
-        android:name="com.example.foodorderapp.ui.admin.RestaurantApprovalFragment"
-        android:label="Nhà hàng" />
+    <fragment android:id="@+id/nav_restaurants"
+        android:name="com.example.foodorderapp.ui.fragment.RestaurantApprovalFragment"
+        android:label="Nhà hàng">
+        <action
+            android:id="@+id/action_restaurants_to_detail"
+            app:destination="@id/nav_restaurant_detail" />
+    </fragment>
 
-    <fragment
-        android:id="@+id/nav_users"
+    <fragment android:id="@+id/nav_users"
         android:name="com.example.foodorderapp.ui.admin.UserListFragment"
-        android:label="Users" />
+        android:label="Users">
 
-    <fragment
-        android:id="@+id/nav_report"
+        <!-- Action navigate sang UserDetail -->
+        <action
+            android:id="@+id/action_users_to_detail"
+            app:destination="@id/nav_user_detail"/>
+    </fragment>
+
+    <!-- UserDetail — không có trong bottom nav -->
+    <fragment android:id="@+id/nav_user_detail"
+        android:name="com.example.foodorderapp.ui.fragment.UserDetailFragment"
+        android:label="Chi tiết người dùng">
+        <argument
+            android:name="uid"
+            app:argType="string"/>
+    </fragment>
+
+    <!-- RestaurantDetail -->
+    <fragment android:id="@+id/nav_restaurant_detail"
+        android:name="com.example.foodorderapp.ui.fragment.RestaurantDetailFragment"
+        android:label="Chi tiết nhà hàng">
+        <argument
+            android:name="restaurantId"
+            app:argType="string"/>
+    </fragment>
+
+    <fragment android:id="@+id/nav_report"
         android:name="com.example.foodorderapp.ui.admin.ReportFragment"
-        android:label="Báo cáo" />
+        android:label="Báo cáo"/>
 
 </navigation>

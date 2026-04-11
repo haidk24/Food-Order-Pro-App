@@ -4,13 +4,20 @@ public class User {
     private String uid;
     private String displayName;
     private String email;
-    private String phone;
+    private String phone ;
     private String role;       // customer | restaurant | shipper | admin
     private String status;     // active | banned
     private int orderCount;
 
-    public User() {
+    public Object getCreatedAt() {
+        return createdAt;
     }
+    public void setCreatedAt(Object createdAt) {
+        this.createdAt = createdAt;
+    }
+    public Object createdAt;
+
+    public User() {}
 
     public User(String uid, String displayName, String email, String phone, String role, String status, int orderCount) {
         this.uid = uid;
