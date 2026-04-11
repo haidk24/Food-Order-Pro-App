@@ -32,22 +32,39 @@ public class ReportRepository {
             MutableLiveData<ReportStats> liveData,
             MutableLiveData<Boolean>     loading,
             MutableLiveData<String>      error) {
+        loadStats(period, null, liveData, loading, error);
+    }
+
+    public void loadStats(
+            Period period,
+            String restaurantId,
+            MutableLiveData<ReportStats> liveData,
+            MutableLiveData<Boolean> loading,
+            MutableLiveData<String> error) {
 
         loading.postValue(true);
 
         Date startDate = getStartDate(period);
         int  dayCount  = getDayCount(period);
 
-        // Query orders trong khoảng thời gian
-        db.collection("orders")
-                .whereGreaterThanOrEqualTo("createdAt", startDate)
-                .orderBy("createdAt", Query.Direction.ASCENDING)
-                .get()
+        String scopedRestaurantId = restaurantId == null ? "" : restaurantId.trim();
+        boolean hasRestaurantScope = !scopedRestaurantId.isEmpty();
+
+        Query query;
+        if (hasRestaurantScope) {
+            // Scoped mode: read directly from restaurant sub-collection to avoid index/rule issues.
+            query = db.collection("restaurants").document(scopedRestaurantId).collection("orders");
+        } else {
+            // Admin/global mode.
+            query = db.collection("orders").whereGreaterThanOrEqualTo("createdAt", startDate);
+        }
+
+        query.get()
                 .addOnSuccessListener(snapshot -> {
                     List<DocumentSnapshot> docs = snapshot.getDocuments();
 
                     // ── Tính toán từ danh sách orders ────────────────
-                    long totalOrders     = docs.size();
+                    long totalOrders     = 0;
                     long delivered       = 0;
                     long cancelled       = 0;
                     long totalRevenue    = 0;
@@ -71,31 +88,35 @@ public class ReportRepository {
 
                     for (DocumentSnapshot doc : docs) {
                         String status = doc.getString("status");
-                        Long   amount = doc.getLong("totalAmount");
+                        long amount = extractAmount(doc);
                         String method = doc.getString("paymentMethod");
-                        String restId = doc.getString("restaurantId");
+                        String restId = hasRestaurantScope ? scopedRestaurantId : doc.getString("restaurantId");
                         Object createdAt = doc.get("createdAt");
+
+                        Date orderDate = extractDate(createdAt);
+                        if (orderDate == null || orderDate.before(startDate)) {
+                            continue;
+                        }
+
+                        totalOrders++;
 
                         // Đếm theo status
                         if ("delivered".equals(status)) {
                             delivered++;
-                            if (amount != null) totalRevenue += amount;
+                            totalRevenue += amount;
 
                             // Revenue theo ngày (chỉ tính đơn delivered)
-                            if (createdAt instanceof com.google.firebase.Timestamp) {
-                                Date d = ((com.google.firebase.Timestamp) createdAt).toDate();
-                                String dayKey = sdf.format(d);
-                                if (revenueByDay.containsKey(dayKey)) {
-                                    revenueByDay.put(dayKey,
-                                            revenueByDay.get(dayKey) + (amount != null ? amount : 0));
-                                }
+                            String dayKey = sdf.format(orderDate);
+                            if (revenueByDay.containsKey(dayKey)) {
+                                revenueByDay.put(dayKey,
+                                        revenueByDay.get(dayKey) + amount);
                             }
 
                             // Doanh thu theo nhà hàng
                             if (restId != null) {
                                 Long[] stat = restMap.getOrDefault(restId, new Long[]{0L, 0L});
                                 stat[0]++;
-                                stat[1] += (amount != null ? amount : 0);
+                                stat[1] += amount;
                                 restMap.put(restId, stat);
                             }
                         }
@@ -221,5 +242,23 @@ public class ReportRepository {
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
         return map;
+    }
+
+    private long extractAmount(DocumentSnapshot doc) {
+        Object value = doc.get("totalAmount");
+        if (value instanceof Number) {
+            return Math.round(((Number) value).doubleValue());
+        }
+        return 0L;
+    }
+
+    private Date extractDate(Object value) {
+        if (value instanceof com.google.firebase.Timestamp) {
+            return ((com.google.firebase.Timestamp) value).toDate();
+        }
+        if (value instanceof Date) {
+            return (Date) value;
+        }
+        return null;
     }
 }

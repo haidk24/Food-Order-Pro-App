@@ -22,14 +22,20 @@ public class ReportViewModel extends ViewModel {
     // Kỳ hiện tại đang chọn
     private ReportRepository.Period currentPeriod
             = ReportRepository.Period.TODAY;
+    private String restaurantScopeId;
 
     public ReportViewModel() {
         loadReport(ReportRepository.Period.TODAY);
     }
 
+    public void setRestaurantScope(String restaurantId) {
+        this.restaurantScopeId = restaurantId;
+        refresh();
+    }
+
     public void loadReport(ReportRepository.Period period) {
         currentPeriod = period;
-        repo.loadStats(period, reportStats, isLoading, errorMessage);
+        repo.loadStats(period, restaurantScopeId, reportStats, isLoading, errorMessage);
     }
 
     public void refresh() {

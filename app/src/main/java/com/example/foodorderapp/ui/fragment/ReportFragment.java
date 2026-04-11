@@ -33,6 +33,8 @@ import java.util.Map;
 
 public class ReportFragment extends Fragment {
 
+    public static final String ARG_RESTAURANT_ID = "ARG_RESTAURANT_ID";
+
     private ReportViewModel viewModel;
 
     // Views
@@ -55,6 +57,14 @@ public class ReportFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(ReportViewModel.class);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            String restaurantId = args.getString(ARG_RESTAURANT_ID, "");
+            if (restaurantId != null && !restaurantId.trim().isEmpty()) {
+                viewModel.setRestaurantScope(restaurantId.trim());
+            }
+        }
 
         bindViews(view);
         setupPeriodChips(view);

@@ -79,6 +79,13 @@ public class OrderDashboardActivity extends AppCompatActivity implements Navigat
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
+            } else if (item.getItemId() == R.id.nav_report) {
+                Intent intent = new Intent(getApplicationContext(), RestaurantReportActivity.class);
+                intent.putExtra("EXTRA_RESTAURANT_ID", currentRestaurantId);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
             }
             return true;
         });
