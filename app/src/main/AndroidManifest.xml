@@ -14,43 +14,25 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FoodOrderApp"
         tools:targetApi="31">
+
+        <activity android:name=".ui.MenuActivity" android:exported="false" />
+
         <activity
             android:name=".ui.SignInActivity"
-            android:name=".ui.OrderDashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.adapter.OrderAdapter"
-            android:exported="false" />
-        <activity
-            android:name=".ui.EditFoodActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.AddFoodActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.MenuActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.SignUpActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.MainActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.activity.FoodDetailActivity"
-            android:exported="false" />
 
-        <activity
-            android:name=".ui.admin.AdminActivity"
-            android:exported="false" />
-            android:name=".ui.MainActivity"
-            android:exported="false" />
+        <activity android:name=".ui.SignUpActivity" android:exported="false" />
+        <activity android:name=".ui.MainActivity" android:exported="false" />
+        <activity android:name=".ui.OrderDashboardActivity" android:exported="false" />
+        <activity android:name=".ui.EditFoodActivity" android:exported="false" />
+        <activity android:name=".ui.AddFoodActivity" android:exported="false" />
+        <activity android:name=".ui.activity.FoodDetailActivity" android:exported="false" />
+        <activity android:name=".ui.admin.AdminActivity" android:exported="false" />
     </application>
 
 </manifest>

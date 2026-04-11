@@ -19,7 +19,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -75,7 +74,13 @@ public class SignInActivity extends AppCompatActivity {
         super.onStart();
         try {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                openMainAndFinish();
+                setLoading(true);
+                authViewModel.getCurrentUserProfile().addOnCompleteListener(task -> {
+                    setLoading(false);
+                    if (task.isSuccessful()) {
+                        handleLoginSuccess(task.getResult());
+                    }
+                });
             }
         } catch (IllegalStateException ignored) {
             // Firebase is optional in local/dev builds without google-services.json.
@@ -89,12 +94,11 @@ public class SignInActivity extends AppCompatActivity {
         if (!isInputValid(email, password)) return;
 
         setLoading(true);
-        // Đăng nhập thật từ Firebase
         authViewModel.login(email, password).addOnCompleteListener(task -> {
             setLoading(false);
             if (task.isSuccessful()) {
                 Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                openMainAndFinish();
+                handleLoginSuccess(task.getResult());
             } else {
                 String error = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
@@ -108,15 +112,22 @@ public class SignInActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, "Chào mừng " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+        navigateByRole(user.getRole());
+    }
 
-        if ("admin".equals(user.getRole())) {
-            // Role Admin -> Vào trang quản trị
-            startActivity(new Intent(SignInActivity.this, AdminActivity.class));
+    private void navigateByRole(String role) {
+        String normalizedRole = role == null ? "" : role.trim().toLowerCase();
+        Intent intent;
+
+        if ("admin".equals(normalizedRole)) {
+            intent = new Intent(SignInActivity.this, AdminActivity.class);
+        } else if ("restaurant".equals(normalizedRole)) {
+            intent = new Intent(SignInActivity.this, MenuActivity.class);
         } else {
-            // Role khác (customer, shipper...) -> Vào trang chủ chính
-            startActivity(new Intent(SignInActivity.this, MainActivity.class));
+            intent = new Intent(SignInActivity.this, MainActivity.class);
         }
+
+        startActivity(intent);
         finish();
     }
 
@@ -151,10 +162,5 @@ public class SignInActivity extends AppCompatActivity {
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
         btnFacebook.setEnabled(!isLoading);
-    }
-
-    private void openMainAndFinish() {
-        startActivity(new Intent(SignInActivity.this, MainActivity.class));
-        finish();
     }
 }

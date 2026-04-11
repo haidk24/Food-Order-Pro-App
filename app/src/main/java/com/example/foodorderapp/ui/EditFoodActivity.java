@@ -34,8 +34,7 @@ public class EditFoodActivity extends AppCompatActivity {
     private ImageButton btnBack;
 
     private FirebaseFirestore db;
-
-    private final String CURRENT_RESTAURANT_ID = "REST_001";
+    private String currentRestaurantId;
 
     private String currentFoodId;
     private String oldImageUrl;
@@ -66,6 +65,14 @@ public class EditFoodActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
 
         db = FirebaseFirestore.getInstance();
+
+        currentRestaurantId = getIntent().getStringExtra("EXTRA_RESTAURANT_ID");
+        if (currentRestaurantId == null || currentRestaurantId.trim().isEmpty()) {
+            Toast.makeText(this, "Khong tim thay nha hang hien tai", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        currentRestaurantId = currentRestaurantId.trim();
 
         currentFoodId = getIntent().getStringExtra("EXTRA_FOOD_ID");
         String oldName = getIntent().getStringExtra("EXTRA_NAME");
@@ -262,7 +269,7 @@ public class EditFoodActivity extends AppCompatActivity {
             updates.put("imageUrl", finalImageUrl);
         }
 
-        db.collection("restaurants").document(CURRENT_RESTAURANT_ID)
+        db.collection("restaurants").document(currentRestaurantId)
                 .collection("foods").document(currentFoodId)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {

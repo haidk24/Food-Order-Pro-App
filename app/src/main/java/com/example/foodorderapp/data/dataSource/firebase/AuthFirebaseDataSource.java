@@ -22,7 +22,7 @@ public class AuthFirebaseDataSource {
             authInstance = null;
             dbInstance = null;
         }
-        
+
         auth = authInstance;
         db = dbInstance;
     }
@@ -51,9 +51,7 @@ public class AuthFirebaseDataSource {
                                 .addOnSuccessListener(aVoid -> {
                                     taskSource.setResult(null); // SUCCESS
                                 })
-                                .addOnFailureListener(e -> {
-                                    taskSource.setException(e);
-                                });
+                                .addOnFailureListener(taskSource::setException);
 
                     } else {
                         taskSource.setException(task.getException());
@@ -90,15 +88,32 @@ public class AuthFirebaseDataSource {
                                     // 3. trả về user
                                     taskSource.setResult(user);
                                 })
-                                .addOnFailureListener(e -> {
-                                    taskSource.setException(e);
-                                });
+                                .addOnFailureListener(taskSource::setException);
 
                     } else {
                         taskSource.setException(task.getException());
                     }
                 });
 
+        return taskSource.getTask();
+    }
+
+    public Task<User> getCurrentUserProfile() {
+        if (auth == null || db == null) {
+            return Tasks.forException(new IllegalStateException("Firebase chua duoc cau hinh. Vui long them google-services.json"));
+        }
+
+        if (auth.getCurrentUser() == null) {
+            return Tasks.forException(new IllegalStateException("Chua dang nhap"));
+        }
+
+        String uid = auth.getCurrentUser().getUid();
+        TaskCompletionSource<User> taskSource = new TaskCompletionSource<>();
+        db.collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(document -> taskSource.setResult(document.toObject(User.class)))
+                .addOnFailureListener(taskSource::setException);
         return taskSource.getTask();
     }
 }

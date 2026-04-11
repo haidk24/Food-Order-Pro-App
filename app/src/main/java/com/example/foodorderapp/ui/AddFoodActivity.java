@@ -34,8 +34,7 @@ public class AddFoodActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private Uri imageUri = null;
-
-    private final String CURRENT_RESTAURANT_ID = "REST_001";
+    private String currentRestaurantId;
 
     private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -62,6 +61,13 @@ public class AddFoodActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
 
         db = FirebaseFirestore.getInstance();
+        currentRestaurantId = getIntent().getStringExtra("EXTRA_RESTAURANT_ID");
+        if (currentRestaurantId == null || currentRestaurantId.trim().isEmpty()) {
+            Toast.makeText(this, "Khong tim thay nha hang hien tai", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        currentRestaurantId = currentRestaurantId.trim();
 
         btnBack.setOnClickListener(v -> {
             new android.app.AlertDialog.Builder(this)
@@ -209,7 +215,7 @@ public class AddFoodActivity extends AppCompatActivity {
         btnSaveFood.setText("Đang lưu dữ liệu...");
 
         DocumentReference newFoodRef = db.collection("restaurants")
-                .document(CURRENT_RESTAURANT_ID).collection("foods").document();
+                .document(currentRestaurantId).collection("foods").document();
 
         Food newFood = new Food(
                 newFoodRef.getId(), name, description, newPrice,

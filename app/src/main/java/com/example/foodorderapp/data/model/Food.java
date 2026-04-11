@@ -1,7 +1,17 @@
 package com.example.foodorderapp.data.model;
 
-public class Food {
-    private String foodId;
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+import java.io.Serializable;
+
+@Entity(tableName = "foods")
+public class Food implements Serializable {
+    @PrimaryKey
+    @NonNull
+    private String foodId = "";
     private String name;
     private String description;
     private double price;
@@ -13,6 +23,7 @@ public class Food {
     @com.google.firebase.firestore.PropertyName("isAvailable")
     private boolean isAvailable;
     private int orderCount;
+    private int count;
 
     // 1. BẮT BUỘC: Hàm khởi tạo rỗng cho Firestore
     public Food() {}
@@ -22,7 +33,7 @@ public class Food {
     }
 
     public void setFoodId(String foodId) {
-        this.foodId = foodId;
+        this.foodId = foodId == null ? "" : foodId;
     }
 
     public String getName() {
@@ -133,14 +144,24 @@ public class Food {
         this.orderCount = orderCount;
     }
 
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = Math.max(count, 0);
+    }
+
+    @Ignore
     public Food(String foodId, String name, String description, double price, String imageUrl, String category, boolean isAvailable, int orderCount) {
         this(foodId, name, description, price, imageUrl, category, isAvailable, orderCount, price, price, 0);
     }
 
+    @Ignore
     public Food(String foodId, String name, String description, double price, String imageUrl,
                 String category, boolean isAvailable, int orderCount,
                 double oldPrice, double newPrice, int discountPercent) {
-        this.foodId = foodId;
+        this.foodId = foodId == null ? "" : foodId;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -151,6 +172,7 @@ public class Food {
         this.category = category;
         this.isAvailable = isAvailable;
         this.orderCount = orderCount;
+        this.count = 0;
     }
 
     // TODO: Đặt chuột ở đây, bấm Alt + Insert -> Getter and Setter -> Bấm Ctrl + A -> Enter nhé!

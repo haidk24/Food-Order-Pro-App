@@ -33,16 +33,18 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
 
     private Context context;
     private List<Food> foodList;
+    private String restaurantId;
 
-    public FoodAdapter(Context context, List<Food> foodList) {
+    public FoodAdapter(Context context, List<Food> foodList, String restaurantId) {
         this.context = context;
         this.foodList = foodList;
+        this.restaurantId = restaurantId == null ? "" : restaurantId;
     }
 
     @NonNull
     @Override
     public FoodViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_food, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_food_manage, parent, false);
         return new FoodViewHolder(view);
     }
 
@@ -107,11 +109,7 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
         }
 
         // 5. HIỆU ỨNG THỊ GIÁC (Làm mờ thẻ nếu trạng thái là Tạm ẩn)
-        if (food.isAvailable()) {
-            holder.itemView.setAlpha(1.0f); // Hiện rõ 100%
-        } else {
-            holder.itemView.setAlpha(0.5f); // Làm mờ 50%
-        }
+        holder.itemView.setAlpha(food.isAvailable() ? 1.0f : 0.5f);
 
         // 6. XỬ LÝ MENU 3 CHẤM (Sửa - Ẩn - Xóa)
         holder.btnOptions.setOnClickListener(v -> {
@@ -121,13 +119,19 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             popup.getMenu().add("Xóa vĩnh viễn");
 
             popup.setOnMenuItemClickListener(item -> {
+                if (restaurantId.isEmpty()) {
+                    Toast.makeText(context, "Khong tim thay nha hang hien tai", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
                 DocumentReference foodRef = db.collection("restaurants")
-                        .document("REST_001").collection("foods").document(food.getFoodId());
+                        .document(restaurantId).collection("foods").document(food.getFoodId());
 
                 if (item.getTitle().equals("Sửa món")) {
                     // Chuyển sang màn hình Edit và gửi kèm dữ liệu cũ
                     Intent intent = new Intent(context, EditFoodActivity.class);
+                    intent.putExtra("EXTRA_RESTAURANT_ID", restaurantId);
                     intent.putExtra("EXTRA_FOOD_ID", food.getFoodId());
                     intent.putExtra("EXTRA_NAME", food.getName());
                     intent.putExtra("EXTRA_PRICE", food.getPrice());
@@ -177,3 +181,4 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
         }
     }
 }
+

@@ -1,14 +1,22 @@
 package com.example.foodorderapp.data.model;
 
-import com.google.firebase.firestore.GeoPoint; // Import thư viện tọa độ
+import com.google.firebase.firestore.GeoPoint;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Restaurant {
     private String restaurantId;
     private String ownerId;
     private String name;
     private String imageUrl;
-    private Address address; // Kiểu map
-    private GeoPoint location; // Kiểu tọa độ bản đồ
+    private Address address;
+    private GeoPoint location;
+    private String status;
+    private double rating;
+    private List<Food> foods = new ArrayList<>();
+
+    public Restaurant() {}
 
     public String getOwnerId() {
         return ownerId;
@@ -74,10 +82,21 @@ public class Restaurant {
         this.restaurantId = restaurantId;
     }
 
-    private String status;
-    private double rating; // Đổi thành double cho số thập phân (VD: 4.5 sao)
+    // Compatibility alias for older merged code paths.
+    public String getId() {
+        return restaurantId;
+    }
 
-    public Restaurant() {}
+    // Compatibility alias for older merged code paths.
+    public void setId(String id) {
+        this.restaurantId = id;
+    }
 
-    // TODO: Tạo Getter và Setter
+    public List<Food> getFoods() {
+        return foods;
+    }
+
+    public void setFoods(List<Food> foods) {
+        this.foods = foods == null ? new ArrayList<>() : foods;
+    }
 }

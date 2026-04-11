@@ -26,10 +26,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     private Context context;
     private List<Order> orderList;
     private FirebaseFirestore db;
+    private String restaurantId;
 
-    public OrderAdapter(Context context, List<Order> orderList) {
+    public OrderAdapter(Context context, List<Order> orderList, String restaurantId) {
         this.context = context;
         this.orderList = orderList;
+        this.restaurantId = restaurantId == null ? "" : restaurantId;
         this.db = FirebaseFirestore.getInstance();
     }
 
@@ -75,8 +77,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
 
         holder.btnUpdateStatus.setOnClickListener(v -> {
+            if (restaurantId.isEmpty()) {
+                Toast.makeText(context, "Khong tim thay nha hang hien tai", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             String nextStatus = "pending".equals(status) ? "confirmed" : "shipping";
-            db.collection("restaurants").document("REST_001")
+            db.collection("restaurants").document(restaurantId)
                     .collection("orders").document(order.getOrderId())
                     .update("status", nextStatus)
                     .addOnSuccessListener(aVoid -> Toast.makeText(context, "Đã cập nhật trạng thái", Toast.LENGTH_SHORT).show());
