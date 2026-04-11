@@ -15,6 +15,7 @@
         android:theme="@style/Theme.FoodOrderApp"
         tools:targetApi="31">
         <activity
+            android:name=".ui.SignInActivity"
             android:name=".ui.OrderDashboardActivity"
             android:exported="false" />
         <activity
@@ -36,6 +37,18 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.SignUpActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.FoodDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.admin.AdminActivity"
+            android:exported="false" />
             android:name=".ui.MainActivity"
             android:exported="false" />
     </application>

@@ -1,58 +1,131 @@
 package com.example.foodorderapp.ui;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.foodorderapp.R;
-import com.example.foodorderapp.data.model.Address;
-import com.example.foodorderapp.data.model.User;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.foodorderapp.ui.fragment.HomeFragment;
+import com.example.foodorderapp.ui.fragment.MyOrderFragment;
+import com.example.foodorderapp.ui.fragment.ShoppingcartFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    private DrawerLayout drawerLayout;
+    private BottomNavigationView bottomNavigationView;
+    private NavigationView navigationView;
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        // Chạy hàm test ngay khi mở app
-        testFirestoreConnection();
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_bottom);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        showUserInformation();
+
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                replaceFragment(new HomeFragment());
+                navigationView.setCheckedItem(R.id.nav_home);
+            } else if (id == R.id.nav_cart) {
+                replaceFragment(new ShoppingcartFragment());
+                navigationView.setCheckedItem(R.id.nav_cart);
+            } else if (id == R.id.nav_myorder) {
+                replaceFragment(new MyOrderFragment());
+                navigationView.setCheckedItem(R.id.nav_myorder);
+            }
+            return true;
+        });
+
+        if (savedInstanceState == null) {
+            replaceFragment(new HomeFragment());
+            navigationView.setCheckedItem(R.id.nav_home);
+            bottomNavigationView.setSelectedItemId(R.id.nav_home);
+        }
     }
 
-    private void testFirestoreConnection() {
-        // 1. Gọi cánh cửa kết nối với Tủ hồ sơ Firestore
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private void showUserInformation() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+        View headerView = navigationView.getHeaderView(0);
+        TextView tvEmail = headerView.findViewById(R.id.textView);
+        tvEmail.setText(user.getEmail());
+    }
 
-        // 2. Tạo một đối tượng Address (Địa chỉ giả lập)
-        Address testAddress = new Address();
-        testAddress.setStreet("123 Đường Cầu Giấy");
-        testAddress.setWard("Dịch Vọng");
-        testAddress.setDistrict("Cầu Giấy");
-        testAddress.setCity("Hà Nội");
+    private void replaceFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_frame, fragment);
+        transaction.commit();
+    }
 
-        // 3. Tạo một đối tượng User (Khách hàng giả lập)
-        User testUser = new User();
-        testUser.setUid("TEST_UID_001");
-        testUser.setDisplayName("Nguyễn Văn Test");
-        testUser.setEmail("test@gmail.com");
-        testUser.setPhone("0987654321");
-        testUser.setRole("customer");
-        testUser.setAddress(testAddress);
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
 
-        // 4. Ra lệnh đẩy dữ liệu lên ngăn kéo "users"
-        db.collection("users").document(testUser.getUid())
-                .set(testUser)
-                .addOnSuccessListener(aVoid -> {
-                    // Nếu thành công, báo Log và hiện Toast
-                    Log.d("TEST_FIREBASE", "Đẩy dữ liệu User thành công rực rỡ!");
-                    Toast.makeText(MainActivity.this, "Kết nối Database OK!", Toast.LENGTH_LONG).show();
-                })
-                .addOnFailureListener(e -> {
-                    // Nếu thất bại, in ra nguyên nhân đỏ chót
-                    Log.e("TEST_FIREBASE", "Lỗi rồi: " + e.getMessage());
-                    Toast.makeText(MainActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+        if (id == R.id.nav_home) {
+            replaceFragment(new HomeFragment());
+            bottomNavigationView.setSelectedItemId(R.id.nav_home);
+        } else if (id == R.id.nav_cart) {
+            replaceFragment(new ShoppingcartFragment());
+            bottomNavigationView.setSelectedItemId(R.id.nav_cart);
+        } else if (id == R.id.nav_myorder) {
+            replaceFragment(new MyOrderFragment());
+            bottomNavigationView.setSelectedItemId(R.id.nav_myorder);
+        } else if (id == R.id.nav_logout) {
+            performLogout();
+        } else if (id == R.id.nav_replacepassword) {
+            // Xử lý đổi mật khẩu
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    private void performLogout() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(this, SignInActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

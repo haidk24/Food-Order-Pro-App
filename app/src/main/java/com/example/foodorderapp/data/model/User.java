@@ -1,19 +1,26 @@
 package com.example.foodorderapp.data.model;
 
-import com.google.firebase.firestore.ServerTimestamp;
-import java.util.Date;
-
 public class User {
-    private String uid; // Đổi tên cho khớp ảnh (PK)
+    private String uid;
     private String displayName;
     private String email;
     private String phone;
-    private String role;
-    private Address address; // Kiểu map -> Trỏ về class Address
-    private String fcmToken; // Dùng để gửi thông báo Push Notification
+    private String role;       // customer | restaurant | shipper | admin
+    private String status;     // active | banned
+    private int orderCount;
 
-    @ServerTimestamp
-    private Date createdAt;
+    public User() {
+    }
+
+    public User(String uid, String displayName, String email, String phone, String role, String status, int orderCount) {
+        this.uid = uid;
+        this.displayName = displayName;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.status = status;
+        this.orderCount = orderCount;
+    }
 
     public String getUid() {
         return uid;
@@ -22,8 +29,6 @@ public class User {
     public void setUid(String uid) {
         this.uid = uid;
     }
-
-    public User() {} // Bắt buộc cho Firestore
 
     public String getDisplayName() {
         return displayName;
@@ -57,28 +62,22 @@ public class User {
         this.role = role;
     }
 
-    public Address getAddress() {
-        return address;
+    public String getStatus() {
+        return status;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public String getFcmToken() {
-        return fcmToken;
+    public int getOrderCount() {
+        return orderCount;
     }
 
-    public void setFcmToken(String fcmToken) {
-        this.fcmToken = fcmToken;
+    public void setOrderCount(int orderCount) {
+        this.orderCount = orderCount;
     }
-
-    public Date getCreatedAt() {
-        return createdAt;
+    public boolean isBanned() {
+        return "banned".equals(status);
     }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-// TODO: Bấm Alt + Insert để tự động tạo toàn bộ Getter và Setter ở đây
 }
