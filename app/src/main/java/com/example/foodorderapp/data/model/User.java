@@ -1,5 +1,6 @@
 package com.example.foodorderapp.data.model;
 
+import com.google.firebase.firestore.Exclude;
 
 public class User {
     private String uid;
@@ -9,14 +10,7 @@ public class User {
     private String role;       // customer | restaurant | shipper | admin
     private String status;     // active | banned
     private int orderCount;
-
-    public Object getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(Object createdAt) {
-        this.createdAt = createdAt;
-    }
-    public Object createdAt;
+    private Object createdAt;
 
     public User() {}
 
@@ -39,6 +33,7 @@ public class User {
     public String getRole()        { return role; }
     public String getStatus()      { return status; }
     public int getOrderCount()     { return orderCount; }
+    public Object getCreatedAt()   { return createdAt; }
 
     // Setters
     public void setUid(String uid)               { this.uid = uid; }
@@ -48,8 +43,5 @@ public class User {
     public void setRole(String r)                { this.role = r; }
     public void setStatus(String s)              { this.status = s; }
     public void setOrderCount(int c)             { this.orderCount = c; }
-
-    public boolean isBanned() {
-        return "banned".equals(status);
-    }
+    public void setCreatedAt(Object createdAt)   { this.createdAt = createdAt; }
 }

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import com.example.foodorderapp.R;
 
-// ui/admin/ReportFragment.java
 public class ReportFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater,

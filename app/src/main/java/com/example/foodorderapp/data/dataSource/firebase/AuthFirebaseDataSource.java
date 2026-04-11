@@ -7,6 +7,9 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AuthFirebaseDataSource {
 
     private final FirebaseAuth auth;
@@ -100,5 +103,19 @@ public class AuthFirebaseDataSource {
                 });
 
         return taskSource.getTask();
+    }
+
+    public Task<Void> updateUser(User user) {
+        if (db == null || user.getUid() == null) {
+            return Tasks.forException(new IllegalStateException("Lỗi dữ liệu"));
+        }
+        return db.collection("users").document(user.getUid()).set(user);
+    }
+
+    public Task<Void> updateFields(String uid, Map<String, Object> updates) {
+        if (db == null || uid == null) {
+            return Tasks.forException(new IllegalStateException("Lỗi dữ liệu"));
+        }
+        return db.collection("users").document(uid).update(updates);
     }
 }

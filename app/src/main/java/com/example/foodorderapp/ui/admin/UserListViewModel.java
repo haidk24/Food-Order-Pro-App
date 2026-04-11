@@ -72,30 +72,29 @@ public class UserListViewModel extends ViewModel {
 
         filteredUsers.postValue(result);
     }
-
-    // ── Khóa / Mở khóa tài khoản ─────────────────────────────────
-    public void toggleBan(User user) {
-        String uid = user.getUid();
-        boolean isBanned = user.isBanned();
-
-        LiveData<Boolean> result = isBanned
-                ? repo.unbanUser(uid)
-                : repo.banUser(uid);
-
-        result.observeForever(success -> {
-            if (success != null) {
-                if (success) {
-                    // Cập nhật trực tiếp trong list local để UI phản hồi ngay
-                    updateUserStatusLocally(uid, isBanned ? "active" : "banned");
-                    toastMessage.postValue(isBanned
-                            ? "Đã mở khóa tài khoản"
-                            : "Đã khóa tài khoản");
-                } else {
-                    toastMessage.postValue("Thao tác thất bại, thử lại");
-                }
-            }
-        });
-    }
+//
+//    // ── Khóa / Mở khóa tài khoản ─────────────────────────────────
+//    public void toggleBan(User user) {
+//        String uid = user.getUid();
+//
+//        LiveData<Boolean> result = isBanned
+//                ? repo.unbanUser(uid)
+//                : repo.banUser(uid);
+//
+//        result.observeForever(success -> {
+//            if (success != null) {
+//                if (success) {
+//                    // Cập nhật trực tiếp trong list local để UI phản hồi ngay
+//                    updateUserStatusLocally(uid, isBanned ? "active" : "banned");
+//                    toastMessage.postValue(isBanned
+//                            ? "Đã mở khóa tài khoản"
+//                            : "Đã khóa tài khoản");
+//                } else {
+//                    toastMessage.postValue("Thao tác thất bại, thử lại");
+//                }
+//            }
+//        });
+//    }
 
     // Cập nhật status trong bộ nhớ mà không cần reload toàn bộ list
     private void updateUserStatusLocally(String uid, String newStatus) {

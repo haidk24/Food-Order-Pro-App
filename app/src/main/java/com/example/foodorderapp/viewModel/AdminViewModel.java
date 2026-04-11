@@ -13,6 +13,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,10 +60,9 @@ public class AdminViewModel extends ViewModel {
 
     public void loadDashboardStats() {
         isLoading.setValue(true);
-        AtomicLong totalUsers = new AtomicLong(0), totalRestaurants = new AtomicLong(0), 
-                   pendingCount = new AtomicLong(0), ordersToday = new AtomicLong(0), revenueToday = new AtomicLong(0);
-        
-        // Giảm số lượng query xuống 4 (Bỏ Shipper)
+        AtomicLong totalUsers = new AtomicLong(0), totalRestaurants = new AtomicLong(0),
+                pendingCount = new AtomicLong(0), ordersToday = new AtomicLong(0), revenueToday = new AtomicLong(0);
+
         AtomicInteger remaining = new AtomicInteger(4);
         Runnable oneDone = () -> {
             if (remaining.decrementAndGet() == 0) {
@@ -77,8 +77,6 @@ public class AdminViewModel extends ViewModel {
                 .addOnSuccessListener(s -> { totalRestaurants.set(s.getCount()); oneDone.run(); }).addOnFailureListener(e -> oneDone.run());
         db.collection("restaurants").whereEqualTo("status", "pending").count().get(AggregateSource.SERVER)
                 .addOnSuccessListener(s -> { pendingCount.set(s.getCount()); pendingRestaurantCount.setValue((int)s.getCount()); oneDone.run(); }).addOnFailureListener(e -> oneDone.run());
-        
-        // BỎ QUERY ĐẾM SHIPPER TẠI ĐÂY
 
         db.collection("orders").whereGreaterThanOrEqualTo("createdAt", getStartOfToday()).get()
                 .addOnSuccessListener(snapshot -> {
@@ -100,7 +98,7 @@ public class AdminViewModel extends ViewModel {
         currentRoleFilter = roleFilter;
         lastUserDocument  = null;
         hasMoreUsers.setValue(true);
-        userList.setValue(new ArrayList<>()); 
+        userList.setValue(new ArrayList<>());
         fetchUserPage(true);
     }
 
@@ -113,10 +111,10 @@ public class AdminViewModel extends ViewModel {
         isPaging = true;
         if (!isFirstPage) isLoadingMore.setValue(true);
 
-        Query query = db.collection("users").orderBy("createdAt", Query.Direction.DESCENDING);
+        Query query = db.collection("users").orderBy("displayName", Query.Direction.ASCENDING);
         if (!"all".equals(currentRoleFilter)) {
             query = db.collection("users").whereEqualTo("role", currentRoleFilter)
-                      .orderBy("createdAt", Query.Direction.DESCENDING);
+                    .orderBy("displayName", Query.Direction.ASCENDING);
         }
 
         if (lastUserDocument != null) query = query.startAfter(lastUserDocument);
@@ -132,7 +130,7 @@ public class AdminViewModel extends ViewModel {
             List<User> current = isFirstPage ? new ArrayList<>() : userList.getValue();
             List<User> merged = new ArrayList<>(current != null ? current : new ArrayList<>());
             merged.addAll(newUsers);
-            
+
             userList.setValue(merged);
             lastUserDocument = docs.isEmpty() ? null : docs.get(docs.size() - 1);
             hasMoreUsers.setValue(docs.size() == PAGE_SIZE);
@@ -205,9 +203,30 @@ public class AdminViewModel extends ViewModel {
 
     public void approveRestaurant(String restaurantId) {
         isLoading.postValue(true);
-        db.collection("restaurants").document(restaurantId).update("status", "active")
-                .addOnSuccessListener(v -> { actionSuccess.postValue(true); isLoading.postValue(false); })
-                .addOnFailureListener(e -> { logError("duyệt nhà hàng", e); isLoading.postValue(false); });
+        // Lấy thông tin nhà hàng để lấy ownerId
+        db.collection("restaurants").document(restaurantId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String ownerId = documentSnapshot.getString("ownerId");
+                    if (ownerId != null) {
+                        WriteBatch batch = db.batch();
+                        // 1. Cập nhật trạng thái nhà hàng
+                        batch.update(db.collection("restaurants").document(restaurantId), "status", "active");
+                        // 2. Cập nhật vai trò của user thành restaurant
+                        batch.update(db.collection("users").document(ownerId), "role", "restaurant");
+                        
+                        batch.commit().addOnSuccessListener(aVoid -> {
+                            actionSuccess.postValue(true);
+                            isLoading.postValue(false);
+                        }).addOnFailureListener(e -> {
+                            logError("duyệt nhà hàng", e);
+                            isLoading.postValue(false);
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    logError("lấy thông tin nhà hàng", e);
+                    isLoading.postValue(false);
+                });
     }
 
     public void suspendRestaurant(String restaurantId) {
@@ -234,15 +253,38 @@ public class AdminViewModel extends ViewModel {
     public void banUser(String uid) {
         isLoading.postValue(true);
         db.collection("users").document(uid).update("status", "banned")
-                .addOnSuccessListener(v -> { actionSuccess.postValue(true); isLoading.postValue(false); })
+                .addOnSuccessListener(v -> {
+                    actionSuccess.postValue(true);
+                    isLoading.postValue(false);
+                    loadUserDetail(uid);
+                })
                 .addOnFailureListener(e -> { logError("khóa tài khoản", e); isLoading.postValue(false); });
     }
 
     public void unbanUser(String uid) {
         isLoading.postValue(true);
         db.collection("users").document(uid).update("status", "active")
-                .addOnSuccessListener(v -> { actionSuccess.postValue(true); isLoading.postValue(false); })
+                .addOnSuccessListener(v -> {
+                    actionSuccess.postValue(true);
+                    isLoading.postValue(false);
+                    loadUserDetail(uid);
+                })
                 .addOnFailureListener(e -> { logError("mở khóa tài khoản", e); isLoading.postValue(false); });
+    }
+
+    public void updateUser(User user) {
+        if (user.getUid() == null) return;
+        isLoading.postValue(true);
+        db.collection("users").document(user.getUid()).set(user)
+                .addOnSuccessListener(v -> {
+                    actionSuccess.postValue(true);
+                    isLoading.postValue(false);
+                    selectedUser.postValue(user);
+                })
+                .addOnFailureListener(e -> {
+                    logError("cập nhật thông tin", e);
+                    isLoading.postValue(false);
+                });
     }
 
     private final MutableLiveData<User> selectedUser = new MutableLiveData<>();
@@ -259,6 +301,9 @@ public class AdminViewModel extends ViewModel {
                 })
                 .addOnFailureListener(e -> { logError("tải chi tiết user", e); isLoading.postValue(false); });
     }
+
+    public LiveData<User> getSelectedUser() { return selectedUser; }
+    public LiveData<Boolean> getActionSuccess() { return actionSuccess; }
 
     private final MutableLiveData<Restaurant> selectedRestaurant = new MutableLiveData<>();
     public void loadRestaurantDetail(String restaurantId) {
@@ -285,7 +330,5 @@ public class AdminViewModel extends ViewModel {
     public LiveData<List<Restaurant>> getPendingRestaurantList() { return pendingRestaurantList; }
     public LiveData<List<Restaurant>> getActiveRestaurantList() { return activeRestaurantList; }
     public LiveData<List<Restaurant>> getSuspendedRestaurantList() { return suspendedRestaurantList; }
-    public LiveData<Boolean> getActionSuccess() { return actionSuccess; }
-    public LiveData<User>    getSelectedUser()  { return selectedUser; }
     public LiveData<Restaurant> getSelectedRestaurant() { return selectedRestaurant; }
 }

@@ -76,19 +76,21 @@ public class SignUpActivity extends AppCompatActivity {
         user.setEmail(email);
         user.setPhone("");
         user.setRole("customer");
+        user.setStatus("active");
+        user.setOrderCount(0);
 
         btnSignUp.setEnabled(false);
         authViewModel.register(email, password, user).addOnCompleteListener(task -> {
             btnSignUp.setEnabled(true);
 
             if (task.isSuccessful()) {
-                Toast.makeText(SignUpActivity.this, "Dang ky thanh cong", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignUpActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(SignUpActivity.this, SignInActivity.class));
                 finish();
             } else {
                 String message = task.getException() != null
                         ? task.getException().getMessage()
-                        : "Dang ky that bai";
+                        : "Đăng ký thất bại";
                 Toast.makeText(SignUpActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
