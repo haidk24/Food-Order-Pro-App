@@ -19,8 +19,6 @@ public class Restaurant {
     public String   phone;
     public boolean  hasLicence;
     public Object   createdAt;
-    public String phone;
-    public boolean hasLicence;
 
     public Restaurant() {}
 
