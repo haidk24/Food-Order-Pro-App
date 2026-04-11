@@ -1,5 +1,7 @@
 package com.example.foodorderapp.data.model;
 
+import com.google.firebase.firestore.Exclude;
+
 public class User {
     private String uid;
     private String displayName;
@@ -8,14 +10,7 @@ public class User {
     private String role;       // customer | restaurant | shipper | admin
     private String status;     // active | banned
     private int orderCount;
-
-    public Object getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(Object createdAt) {
-        this.createdAt = createdAt;
-    }
-    public Object createdAt;
+    private Object createdAt;
 
     public User() {}
 

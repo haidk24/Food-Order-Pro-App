@@ -21,6 +21,10 @@
             android:icon="@drawable/ic_replace_password"
             android:title="@string/menu_replace_password" />
         <item
+            android:id="@+id/nav_register_restaurant"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="Đăng ký nhà hàng" />
+        <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_logout"
             android:title="@string/menu_logout" />

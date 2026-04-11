@@ -4,6 +4,8 @@ import com.example.foodorderapp.data.model.User;
 import com.example.foodorderapp.data.repository.AuthRepository;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Map;
+
 public class AuthViewModel {
     private AuthRepository authRepository;
 
@@ -21,5 +23,11 @@ public class AuthViewModel {
 
     public Task<User> getCurrentUserProfile() {
         return authRepository.getCurrentUserProfile();
+    public Task<Void> updateUser(User user) {
+        return authRepository.updateUser(user);
+    }
+
+    public Task<Void> updateFields(String uid, Map<String, Object> updates) {
+        return authRepository.updateFields(uid, updates);
     }
 }

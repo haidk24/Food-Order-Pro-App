@@ -3,8 +3,12 @@ package com.example.foodorderapp.ui.fragment;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.*;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +35,7 @@ public class UserDetailFragment extends Fragment {
     private TextView tvInitials, tvName, tvEmail, tvStatusBadge;
     private TextView tvPhone, tvRole, tvCreatedAt, tvOrderCount;
     private Button   btnBanUnban, btnSendNotif;
-    private ImageButton btnBack;
+    private ImageButton btnBack, btnEditUser;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -63,6 +67,7 @@ public class UserDetailFragment extends Fragment {
 
     private void bindViews(View v) {
         btnBack      = v.findViewById(R.id.btn_back);
+        btnEditUser  = v.findViewById(R.id.btn_edit_user);
         tvInitials   = v.findViewById(R.id.tv_initials);
         tvName       = v.findViewById(R.id.tv_name);
         tvEmail      = v.findViewById(R.id.tv_email);
@@ -76,14 +81,20 @@ public class UserDetailFragment extends Fragment {
     }
 
     private void setupListeners(View view) {
-        // Nút quay lại màn hình danh sách user
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
+        }
+
+        if (btnEditUser != null) {
+            btnEditUser.setOnClickListener(v -> {
+                if (currentUser != null) {
+                    showEditUserDialog(currentUser);
+                }
+            });
         }
     }
 
     private void observeData() {
-        // Load xong user
         viewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 currentUser = user;
@@ -91,15 +102,10 @@ public class UserDetailFragment extends Fragment {
             }
         });
 
-        // Kết quả action (ban/unban)
         viewModel.getActionSuccess().observe(getViewLifecycleOwner(), success -> {
             if (Boolean.TRUE.equals(success)) {
                 Toast.makeText(requireContext(),
                         "Thao tác thành công!", Toast.LENGTH_SHORT).show();
-                // Load lại thông tin user
-                if (currentUser != null) {
-                    viewModel.loadUserDetail(currentUser.getUid());
-                }
             }
         });
 
@@ -111,16 +117,14 @@ public class UserDetailFragment extends Fragment {
     }
 
     private void renderUser(User user) {
-        // Avatar initials
         tvInitials.setText(getInitials(user.getDisplayName()));
         tvName.setText(user.getDisplayName() != null ? user.getDisplayName() : "—");
         tvEmail.setText(user.getEmail() != null ? user.getEmail() : "—");
         tvPhone.setText(user.getPhone() != null ? user.getPhone() : "Chưa cập nhật");
         tvRole.setText(mapRole(user.getRole()));
         tvOrderCount.setText(user.getOrderCount() + " đơn");
-        tvCreatedAt.setText(formatDate(user.createdAt));
+        tvCreatedAt.setText(formatDate(user.getCreatedAt()));
 
-        // Trạng thái
         boolean isBanned = "banned".equals(user.getStatus());
         if (isBanned) {
             tvStatusBadge.setText("Bị khóa");
@@ -138,7 +142,6 @@ public class UserDetailFragment extends Fragment {
             btnBanUnban.setTextColor(0xFF8B1A1A);
         }
 
-        // Không cho phép Admin tự khóa chính mình
         String currentUid = "";
         try {
             if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -148,7 +151,6 @@ public class UserDetailFragment extends Fragment {
         
         btnBanUnban.setEnabled(!user.getUid().equals(currentUid));
 
-        // Nút Ban/Unban
         btnBanUnban.setOnClickListener(v -> {
             if (isBanned) {
                 showConfirmDialog(
@@ -163,11 +165,76 @@ public class UserDetailFragment extends Fragment {
             }
         });
 
-        // Nút Gửi thông báo
         btnSendNotif.setOnClickListener(v -> showSendNotifDialog(user));
     }
 
-    // Dialog xác nhận Ban/Unban
+    private void showEditUserDialog(User user) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Chỉnh sửa thông tin");
+
+        LinearLayout layout = new LinearLayout(requireContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 20, 50, 20);
+
+        // Name
+        final EditText etName = new EditText(requireContext());
+        etName.setHint("Họ tên");
+        etName.setText(user.getDisplayName());
+        layout.addView(etName);
+
+        // Phone
+        final EditText etPhone = new EditText(requireContext());
+        etPhone.setHint("Số điện thoại");
+        etPhone.setText(user.getPhone());
+        etPhone.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+        layout.addView(etPhone);
+
+        // Role Spinner
+        TextView tvRoleLabel = new TextView(requireContext());
+        tvRoleLabel.setText("Vai trò:");
+        tvRoleLabel.setPadding(0, 20, 0, 10);
+        layout.addView(tvRoleLabel);
+
+        final Spinner spinnerRole = new Spinner(requireContext());
+        String[] roles = {"customer", "restaurant", "admin"};
+        String[] roleLabels = {"Khách hàng", "Nhà hàng", "Admin"};
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), 
+                android.R.layout.simple_spinner_item, roleLabels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerRole.setAdapter(adapter);
+
+        // Set current role
+        for (int i = 0; i < roles.length; i++) {
+            if (roles[i].equals(user.getRole())) {
+                spinnerRole.setSelection(i);
+                break;
+            }
+        }
+        layout.addView(spinnerRole);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Lưu", (dialog, which) -> {
+            String newName = etName.getText().toString().trim();
+            String newPhone = etPhone.getText().toString().trim();
+            String newRole = roles[spinnerRole.getSelectedItemPosition()];
+
+            if (newName.isEmpty()) {
+                Toast.makeText(requireContext(), "Tên không được để trống", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            user.setDisplayName(newName);
+            user.setPhone(newPhone);
+            user.setRole(newRole);
+            viewModel.updateUser(user);
+        });
+
+        builder.setNegativeButton("Hủy", null);
+        builder.show();
+    }
+
     private void showConfirmDialog(String title, String message, Runnable onConfirm) {
         new AlertDialog.Builder(requireContext())
                 .setTitle(title)
@@ -177,7 +244,6 @@ public class UserDetailFragment extends Fragment {
                 .show();
     }
 
-    // Dialog gửi thông báo tới user
     private void showSendNotifDialog(User user) {
         android.widget.EditText etMessage = new android.widget.EditText(
                 requireContext());
@@ -197,7 +263,6 @@ public class UserDetailFragment extends Fragment {
                 .show();
     }
 
-    // ── Helpers ───────────────────────────────────────────────────
     private String getInitials(String name) {
         if (name == null || name.trim().isEmpty()) return "?";
         String[] parts = name.trim().split("\\s+");

@@ -1,5 +1,6 @@
 package com.example.foodorderapp.data.model;
 
+import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class Restaurant {
     public String getOwnerId() {
         return ownerId;
     }
+    public String   ownerId;       // FK → users
 
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
@@ -105,13 +107,17 @@ public class Restaurant {
     }
 
     public String getAddressText() {
-        if (address == null) {
-            return "Chua cap nhat";
+        if (address == null) return "Chưa cập nhật";
+        StringBuilder sb = new StringBuilder();
+        if (address.containsKey("street") && address.get("street") != null)
+            sb.append(address.get("street"));
+        if (address.containsKey("district") && address.get("district") != null) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(address.get("district"));
         }
-
-        if (address instanceof Address) {
-            Address a = (Address) address;
-            return joinAddressParts(a.getStreet(), a.getWard(), a.getDistrict(), a.getCity());
+        if (address.containsKey("city") && address.get("city") != null) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(address.get("city"));
         }
 
         if (address instanceof Map) {
@@ -125,6 +131,16 @@ public class Restaurant {
         }
 
         return String.valueOf(address);
+    }
+
+    public String getInitials() {
+        if (name == null || name.trim().isEmpty()) return "?";
+        String[] parts = name.trim().split("\\s+");
+        if (parts.length == 1)
+            return String.valueOf(parts[0].charAt(0)).toUpperCase();
+        return (String.valueOf(parts[0].charAt(0))
+                + String.valueOf(parts[parts.length - 1].charAt(0)))
+                .toUpperCase();
     }
 
     public String getStatusText() {
