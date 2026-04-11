@@ -19,6 +19,10 @@ public class AuthRepository {
         return authFirebaseDataSource.login(email,password);
     }
 
+    public Task<User> signInWithGoogle(String idToken) {
+        return authFirebaseDataSource.signInWithGoogle(idToken);
+    }
+
     public Task<Void> updateUser(User user) {
         return authFirebaseDataSource.updateUser(user);
     }

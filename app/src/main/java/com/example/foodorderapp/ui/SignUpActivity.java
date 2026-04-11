@@ -51,11 +51,11 @@ public class SignUpActivity extends AppCompatActivity {
                 "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
                 Toast.LENGTH_SHORT
         ).show());
-        findViewById(R.id.btnFacebook).setOnClickListener(v -> Toast.makeText(
-                SignUpActivity.this,
-                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
-                Toast.LENGTH_SHORT
-        ).show());
+//        findViewById(R.id.btnFacebook).setOnClickListener(v -> Toast.makeText(
+//                SignUpActivity.this,
+//                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
+//                Toast.LENGTH_SHORT
+//        ).show());
     }
 
     private void createAccount() {
