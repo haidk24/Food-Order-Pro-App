@@ -238,6 +238,7 @@ public class ShoppingcartFragment extends Fragment {
         order.setTotalAmount(total);
         order.setStatus("pending");
         order.setPaymentMethod("COD");
+        order.setReviewed(false);
         order.setCreatedAt(Timestamp.now().toDate());
         return order;
     }

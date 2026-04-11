@@ -71,6 +71,13 @@ public class ReviewViewModel extends ViewModel {
             return;
         }
 
+        if (orderId == null || orderId.trim().isEmpty()
+                || customerId == null || customerId.trim().isEmpty()
+                || restaurantId == null || restaurantId.trim().isEmpty()) {
+            validationError.setValue("Thong tin don hang khong hop le");
+            return;
+        }
+
         isLoading.setValue(true);
 
         Review review = new Review(
@@ -82,7 +89,6 @@ public class ReviewViewModel extends ViewModel {
             tags.getValue()
         );
 
-        repository.submitReview(review, isSuccess, errorMsg);
-        isLoading.setValue(false);
+        repository.submitReview(review, orderId, restaurantId, isSuccess, errorMsg, isLoading);
     }
 }

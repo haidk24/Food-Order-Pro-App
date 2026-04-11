@@ -124,6 +124,16 @@
                         android:textSize="16sp" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/tv_restaurant_rating"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Đánh giá nhà hàng: Chưa có"
+                    android:textColor="#455A64"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"

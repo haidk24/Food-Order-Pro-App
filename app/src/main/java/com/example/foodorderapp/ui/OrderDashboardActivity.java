@@ -208,7 +208,22 @@ public class OrderDashboardActivity extends AppCompatActivity implements Navigat
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.nav_logout) {
+        int id = item.getItemId();
+        if (id == R.id.nav_order) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+        if (id == R.id.nav_menu) {
+            Intent intent = new Intent(this, MenuActivity.class);
+            intent.putExtra("EXTRA_RESTAURANT_ID", currentRestaurantId);
+            startActivity(intent);
+            finish();
+        } else if (id == R.id.nav_report) {
+            Intent intent = new Intent(this, RestaurantReportActivity.class);
+            intent.putExtra("EXTRA_RESTAURANT_ID", currentRestaurantId);
+            startActivity(intent);
+            finish();
+        } else if (id == R.id.nav_logout) {
             performLogout();
         }
         drawerLayout.closeDrawer(GravityCompat.START);

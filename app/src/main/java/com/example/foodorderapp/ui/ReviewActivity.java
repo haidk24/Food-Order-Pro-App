@@ -11,6 +11,7 @@ import com.example.foodorderapp.viewModel.ReviewViewModel;
 import com.example.foodorderapp.viewModel.ReviewViewModelFactory;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class ReviewActivity extends AppCompatActivity {
     private ChipGroup chipGroup;
     private Button btnSubmit;
     private ProgressBar progressBar;
+    private boolean hasValidOrderInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +72,23 @@ public class ReviewActivity extends AppCompatActivity {
         String restaurantId = getIntent().getStringExtra("restaurantId");
         String foodName     = getIntent().getStringExtra("foodName");
 
+        if (customerId == null || customerId.trim().isEmpty()) {
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                customerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            }
+        }
+
+        hasValidOrderInfo = orderId != null && !orderId.trim().isEmpty()
+                && customerId != null && !customerId.trim().isEmpty()
+                && restaurantId != null && !restaurantId.trim().isEmpty();
+
         viewModel.setOrderInfo(orderId, customerId, restaurantId);
         if (foodName != null) tvFoodName.setText(foodName);
+
+        if (!hasValidOrderInfo) {
+            btnSubmit.setEnabled(false);
+            Toast.makeText(this, "Thong tin don hang khong hop le", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void observeViewModel() {

@@ -17,22 +17,33 @@ import com.example.foodorderapp.R;
 import com.example.foodorderapp.data.model.CartItem;
 import com.example.foodorderapp.data.model.Order;
 import com.example.foodorderapp.ui.OrderItemsActivity;
+import com.example.foodorderapp.ui.ReviewActivity;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
+
+    public interface CustomerActionListener {
+        void onTrackOrder(Order order);
+        void onReviewOrder(Order order);
+    }
 
     private final Context context;
     private final List<Order> orderList;
     private final FirebaseFirestore db;
     private final String restaurantId;
     private final boolean restaurantMode;
+    private CustomerActionListener customerActionListener;
 
     public OrderAdapter(Context context, List<Order> orderList, String restaurantId) {
         this.context = context;
@@ -76,17 +87,36 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         bindStatusUI(holder, order.getStatus());
 
-        if (restaurantMode) {
-            holder.itemView.setOnClickListener(v -> openOrderItemsScreen(order));
-        } else {
-            holder.itemView.setOnClickListener(null);
-        }
+        holder.itemView.setOnClickListener(v -> openOrderItemsScreen(order));
 
         if (!restaurantMode) {
             holder.btnUpdateStatus.setVisibility(View.GONE);
+            holder.customerActions.setVisibility(View.VISIBLE);
+            holder.btnTrackOrder.setOnClickListener(v -> {
+                if (customerActionListener != null) {
+                    customerActionListener.onTrackOrder(order);
+                } else {
+                    openOrderItemsScreen(order);
+                }
+            });
+
+            if (canReview(order)) {
+                holder.btnReviewRestaurant.setVisibility(View.VISIBLE);
+                holder.btnReviewRestaurant.setOnClickListener(v -> {
+                    if (customerActionListener != null) {
+                        customerActionListener.onReviewOrder(order);
+                    } else {
+                        openReviewScreen(order);
+                    }
+                });
+            } else {
+                holder.btnReviewRestaurant.setVisibility(View.GONE);
+                holder.btnReviewRestaurant.setOnClickListener(null);
+            }
             return;
         }
 
+        holder.customerActions.setVisibility(View.GONE);
         holder.btnUpdateStatus.setVisibility(View.VISIBLE);
         holder.btnUpdateStatus.setOnClickListener(v -> {
             if (restaurantId.isEmpty()) {
@@ -100,15 +130,33 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 return;
             }
 
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("status", nextStatus);
+
+            Date now = new Date();
+            if ("confirmed".equals(nextStatus)) {
+                updates.put("confirmedAt", now);
+            } else if ("shipping".equals(nextStatus)) {
+                updates.put("shippingAt", now);
+            } else if ("delivered".equals(nextStatus)) {
+                updates.put("deliveredAt", now);
+            }
+
             WriteBatch batch = db.batch();
             batch.update(db.collection("restaurants").document(restaurantId)
-                    .collection("orders").document(order.getOrderId()), "status", nextStatus);
-            batch.update(db.collection("orders").document(order.getOrderId()), "status", nextStatus);
+                    .collection("orders").document(order.getOrderId()), updates);
+            batch.update(db.collection("orders").document(order.getOrderId()), updates);
 
             batch.commit()
                     .addOnSuccessListener(aVoid -> Toast.makeText(context, "Da cap nhat trang thai", Toast.LENGTH_SHORT).show())
                     .addOnFailureListener(e -> Toast.makeText(context, "Cap nhat that bai: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
+    }
+
+    private boolean canReview(Order order) {
+        String status = order.getStatus() == null ? "" : order.getStatus().trim().toLowerCase(Locale.ROOT);
+        boolean completed = "delivered".equals(status) || "completed".equals(status);
+        return completed && !order.isReviewed();
     }
 
     private void bindStatusUI(OrderViewHolder holder, String status) {
@@ -136,6 +184,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.btnUpdateStatus.setEnabled(true);
                 break;
             case "delivered":
+            case "completed":
                 holder.tvOrderStatus.setText("DA GIAO THANH CONG");
                 holder.tvOrderStatus.setTextColor(Color.parseColor("#1B5E20"));
                 holder.tvOrderStatus.setBackgroundColor(Color.parseColor("#E8F5E9"));
@@ -194,8 +243,41 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         intent.putExtra("EXTRA_CUSTOMER_NAME", order.getCustomerName());
         intent.putExtra("EXTRA_CUSTOMER_PHONE", order.getCustomerPhone());
         intent.putExtra("EXTRA_CUSTOMER_ADDRESS", order.getCustomerAddress());
+        intent.putExtra("EXTRA_RESTAURANT_ID", order.getRestaurantId());
         intent.putStringArrayListExtra("EXTRA_ITEM_LINES", itemLines);
         context.startActivity(intent);
+    }
+
+    public void openReviewScreen(Order order) {
+        if (!canReview(order)) {
+            Toast.makeText(context, "Chi co the danh gia sau khi don da hoan tat", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String customerId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : order.getCustomerId();
+        Intent intent = new Intent(context, ReviewActivity.class);
+        intent.putExtra("orderId", order.getOrderId());
+        intent.putExtra("customerId", customerId);
+        intent.putExtra("restaurantId", order.getRestaurantId());
+        intent.putExtra("foodName", buildReviewTitle(order));
+        context.startActivity(intent);
+    }
+
+    private String buildReviewTitle(Order order) {
+        List<CartItem> items = order.getItems();
+        if (items == null || items.isEmpty() || items.get(0) == null) {
+            return "Don hang #" + safeText(order.getOrderId(), "");
+        }
+        String firstName = safeText(items.get(0).getName(), "Mon an");
+        if (items.size() == 1) {
+            return firstName;
+        }
+        return firstName + " va " + (items.size() - 1) + " mon khac";
+    }
+
+    public void setCustomerActionListener(CustomerActionListener customerActionListener) {
+        this.customerActionListener = customerActionListener;
     }
 
     private String buildCustomerInfo(Order order) {
@@ -217,6 +299,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     public static class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView tvOrderId, tvOrderTime, tvTotalAmount, tvOrderStatus, tvCustomerInfo;
         Button btnUpdateStatus;
+        View customerActions;
+        Button btnTrackOrder;
+        Button btnReviewRestaurant;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -226,6 +311,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvCustomerInfo = itemView.findViewById(R.id.tvCustomerInfo);
             tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
             btnUpdateStatus = itemView.findViewById(R.id.btnUpdateStatus);
+            customerActions = itemView.findViewById(R.id.layoutCustomerActions);
+            btnTrackOrder = itemView.findViewById(R.id.btnTrackOrder);
+            btnReviewRestaurant = itemView.findViewById(R.id.btnReviewRestaurant);
         }
     }
 }

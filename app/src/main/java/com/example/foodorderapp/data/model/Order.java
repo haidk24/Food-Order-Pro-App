@@ -113,6 +113,7 @@ public class Order {
     }
 
     private String paymentMethod;
+    private boolean reviewed;
 
     public String getOrderId() {
         return orderId;
@@ -122,12 +123,45 @@ public class Order {
         this.orderId = orderId;
     }
 
+    public boolean isReviewed() {
+        return reviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        this.reviewed = reviewed;
+    }
+
     private Address deliveryAddress; // Kiểu map
 
     @ServerTimestamp
     private Date createdAt;
+    private Date confirmedAt;
+    private Date shippingAt;
+    private Date deliveredAt;
 
     public Order() {}
 
-    // TODO: Tạo Getter và Setter
+    public Date getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(Date confirmedAt) {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public Date getShippingAt() {
+        return shippingAt;
+    }
+
+    public void setShippingAt(Date shippingAt) {
+        this.shippingAt = shippingAt;
+    }
+
+    public Date getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(Date deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
 }
