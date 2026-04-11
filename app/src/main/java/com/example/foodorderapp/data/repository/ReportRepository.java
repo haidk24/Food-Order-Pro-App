@@ -1,0 +1,225 @@
+package com.example.foodorderapp.data.repository;
+
+
+import androidx.lifecycle.MutableLiveData;
+
+import com.example.foodorderapp.data.model.ReportStats;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class ReportRepository {
+
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    // ── Enum kỳ báo cáo ──────────────────────────────────────────
+    public enum Period { TODAY, WEEK, MONTH }
+
+    // ── Load toàn bộ thống kê theo kỳ ────────────────────────────
+    public void loadStats(
+            Period period,
+            MutableLiveData<ReportStats> liveData,
+            MutableLiveData<Boolean>     loading,
+            MutableLiveData<String>      error) {
+
+        loading.postValue(true);
+
+        Date startDate = getStartDate(period);
+        int  dayCount  = getDayCount(period);
+
+        // Query orders trong khoảng thời gian
+        db.collection("orders")
+                .whereGreaterThanOrEqualTo("createdAt", startDate)
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<DocumentSnapshot> docs = snapshot.getDocuments();
+
+                    // ── Tính toán từ danh sách orders ────────────────
+                    long totalOrders     = docs.size();
+                    long delivered       = 0;
+                    long cancelled       = 0;
+                    long totalRevenue    = 0;
+
+                    // Payment method count
+                    Map<String, Long> paymentCount = new HashMap<>();
+                    paymentCount.put("COD",   0L);
+                    paymentCount.put("MoMo",  0L);
+                    paymentCount.put("VNPay", 0L);
+
+                    // Revenue theo ngày — LinkedHashMap giữ thứ tự ngày
+                    Map<String, Long> revenueByDay = buildEmptyDayMap(
+                            startDate, dayCount);
+
+                    // Thống kê theo restaurantId
+                    Map<String, Long[]> restMap = new HashMap<>();
+                    // Long[0]=totalOrders, Long[1]=totalRevenue
+
+                    SimpleDateFormat sdf = new SimpleDateFormat(
+                            "dd/MM", Locale.getDefault());
+
+                    for (DocumentSnapshot doc : docs) {
+                        String status = doc.getString("status");
+                        Long   amount = doc.getLong("totalAmount");
+                        String method = doc.getString("paymentMethod");
+                        String restId = doc.getString("restaurantId");
+                        Object createdAt = doc.get("createdAt");
+
+                        // Đếm theo status
+                        if ("delivered".equals(status)) {
+                            delivered++;
+                            if (amount != null) totalRevenue += amount;
+
+                            // Revenue theo ngày (chỉ tính đơn delivered)
+                            if (createdAt instanceof com.google.firebase.Timestamp) {
+                                Date d = ((com.google.firebase.Timestamp) createdAt).toDate();
+                                String dayKey = sdf.format(d);
+                                if (revenueByDay.containsKey(dayKey)) {
+                                    revenueByDay.put(dayKey,
+                                            revenueByDay.get(dayKey) + (amount != null ? amount : 0));
+                                }
+                            }
+
+                            // Doanh thu theo nhà hàng
+                            if (restId != null) {
+                                Long[] stat = restMap.getOrDefault(restId, new Long[]{0L, 0L});
+                                stat[0]++;
+                                stat[1] += (amount != null ? amount : 0);
+                                restMap.put(restId, stat);
+                            }
+                        }
+
+                        if ("cancelled".equals(status)) cancelled++;
+
+                        // Phương thức thanh toán
+                        if (method != null && paymentCount.containsKey(method)) {
+                            paymentCount.put(method,
+                                    paymentCount.get(method) + 1);
+                        }
+                    }
+
+                    // ── Lấy thêm tên nhà hàng cho top list ───────────
+                    final long finalDelivered    = delivered;
+                    final long finalCancelled    = cancelled;
+                    final long finalRevenue      = totalRevenue;
+                    final long finalTotal        = totalOrders;
+
+                    loadTopRestaurants(restMap, topList -> {
+                        ReportStats stats = new ReportStats();
+                        stats.totalOrders       = finalTotal;
+                        stats.deliveredOrders   = finalDelivered;
+                        stats.cancelledOrders   = finalCancelled;
+                        stats.totalRevenue      = finalRevenue;
+                        stats.paymentMethodCount = paymentCount;
+                        stats.revenueByDay      = revenueByDay;
+                        stats.topRestaurants    = topList;
+
+                        liveData.postValue(stats);
+                        loading.postValue(false);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    error.postValue("Lỗi tải báo cáo: " + e.getMessage());
+                    loading.postValue(false);
+                });
+    }
+
+    // ── Lấy tên nhà hàng cho top list ────────────────────────────
+    private void loadTopRestaurants(
+            Map<String, Long[]> restMap,
+            OnTopLoaded callback) {
+
+        if (restMap.isEmpty()) {
+            callback.onLoaded(new ArrayList<>());
+            return;
+        }
+
+        List<ReportStats.RestaurantStat> result = new ArrayList<>();
+        AtomicInteger remaining = new AtomicInteger(restMap.size());
+
+        for (Map.Entry<String, Long[]> entry : restMap.entrySet()) {
+            String  restId = entry.getKey();
+            Long[]  stat   = entry.getValue();
+
+            db.collection("restaurants").document(restId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        String name   = doc.getString("name");
+                        Double rating = doc.getDouble("rating");
+                        result.add(new ReportStats.RestaurantStat(
+                                restId,
+                                name != null ? name : "Không tên",
+                                stat[0],
+                                stat[1],
+                                rating != null ? rating : 0.0
+                        ));
+
+                        // Sort theo totalOrders giảm dần khi tất cả xong
+                        if (remaining.decrementAndGet() == 0) {
+                            result.sort((a, b) ->
+                                    Long.compare(b.totalOrders, a.totalOrders));
+                            // Chỉ lấy top 5
+                            List<ReportStats.RestaurantStat> top5 =
+                                    result.subList(0, Math.min(5, result.size()));
+                            callback.onLoaded(new ArrayList<>(top5));
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (remaining.decrementAndGet() == 0) {
+                            callback.onLoaded(result);
+                        }
+                    });
+        }
+    }
+
+    interface OnTopLoaded {
+        void onLoaded(List<ReportStats.RestaurantStat> list);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+    private Date getStartDate(Period period) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        switch (period) {
+            case WEEK:  cal.add(Calendar.DAY_OF_YEAR, -6); break;
+            case MONTH: cal.add(Calendar.DAY_OF_YEAR, -29); break;
+            default: break; // TODAY: không trừ
+        }
+        return cal.getTime();
+    }
+
+    private int getDayCount(Period period) {
+        switch (period) {
+            case WEEK:  return 7;
+            case MONTH: return 30;
+            default:    return 1;
+        }
+    }
+
+    // Tạo map ngày rỗng để fill biểu đồ
+    private Map<String, Long> buildEmptyDayMap(Date start, int dayCount) {
+        Map<String, Long> map = new LinkedHashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM", Locale.getDefault());
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(start);
+        for (int i = 0; i < dayCount; i++) {
+            map.put(sdf.format(cal.getTime()), 0L);
+            cal.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        return map;
+    }
+}
