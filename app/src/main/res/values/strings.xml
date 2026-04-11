@@ -1,24 +1,24 @@
 <resources>
-    <string name="app_name">FoodOrderApp</string>
-    <string name="signup_title">Dang ky</string>
-    <string name="signup_subtitle">Tao tai khoan moi de dat mon nhanh hon</string>
-    <string name="signup_hint_full_name">Ho va ten</string>
+    <string name="app_name">Food Order Pro</string>
+    <string name="signup_title">Đăng ký</string>
+    <string name="signup_subtitle">Tạo tài khoản mới để đặt món nhanh hơn</string>
+    <string name="signup_hint_full_name">Họ và tên</string>
     <string name="signup_hint_email">Email</string>
-    <string name="signup_hint_password">Mat khau</string>
-    <string name="signup_hint_confirm_password">Nhap lai mat khau</string>
-    <string name="signup_create_account">Tao tai khoan</string>
-    <string name="signup_with_social">Hoac dang ky voi</string>
+    <string name="signup_hint_password">Mật khẩu</string>
+    <string name="signup_hint_confirm_password">Nhập lại mật khẩu</string>
+    <string name="signup_create_account">Tạo tài khoản</string>
+    <string name="signup_with_social">Hoặc đăng ký với</string>
     <string name="signup_google">Google</string>
     <string name="signup_facebook">Facebook</string>
-    <string name="signup_login_prompt">Da co tai khoan? Dang nhap</string>
-    <string name="signin_title">Dang nhap</string>
-    <string name="signin_subtitle">Dang nhap de tiep tuc dat mon nhanh hon</string>
+    <string name="signup_login_prompt">Đã có tài khoản? Đăng nhập</string>
+    <string name="signin_title">Đăng nhập</string>
+    <string name="signin_subtitle">Đăng nhập để tiếp tục đặt món nhanh hơn</string>
     <string name="signin_hint_email">Email</string>
-    <string name="signin_hint_password">Mat khau</string>
-    <string name="signin_button">Dang nhap</string>
-    <string name="signin_with_social">Hoac dang nhap voi</string>
-    <string name="signin_signup_prompt">Chua co tai khoan? Dang ky ngay</string>
-    <string name="signin_success">Dang nhap thanh cong</string>
+    <string name="signin_hint_password">Mật khẩu</string>
+    <string name="signin_button">Đăng nhập</string>
+    <string name="signin_with_social">Hoặc đăng nhập với</string>
+    <string name="signin_signup_prompt">Chưa có tài khoản? Đăng ký ngay</string>
+    <string name="signin_success">Đăng nhập thành công</string>
     <string name="error_email_required">Khong duoc de trong email</string>
     <string name="error_email_invalid">Email khong hop le</string>
     <string name="error_password_required">Khong duoc de trong mat khau</string>
@@ -27,13 +27,25 @@
     <string name="error_too_many_requests">Ban da thu qua nhieu lan, vui long thu lai sau</string>
     <string name="error_login_failed">Dang nhap that bai, vui long thu lai</string>
     <string name="social_not_ready">Tinh nang dang nhap mang xa hoi se cap nhat sau</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="menu_home">Home</string>
-    <string name="menu_cart">Cart</string>
-    <string name="menu_myorder">My Orders</string>
-    <string name="menu_logout">Logout</string>
-    <string name="menu_replace_password">Replace Password</string>
+    <string name="navigation_drawer_open">Mở menu điều hướng</string>
+    <string name="navigation_drawer_close">Đóng menu điều hướng</string>
+    <string name="nav_header_title">Food Order Pro</string>
+    <string name="nav_header_subtitle">Xin chào bạn!</string>
+    <string name="menu_home">Trang chủ</string>
+    <string name="menu_cart">Giỏ hàng</string>
+    <string name="menu_myorder">Đơn hàng của tôi</string>
+    <string name="menu_logout">Đăng xuất</string>
+    <string name="menu_replace_password">Đổi mật khẩu</string>
+
+    <string name="home_greeting">Chào bạn!
+Bạn muốn ăn gì hôm nay?</string>
+    <string name="home_special_deal">Ưu đãi đặc biệt</string>
+    <string name="home_offer_detail">Giảm 50%%
+Cho đơn hàng đầu tiên</string>
+    <string name="home_order_now">Đặt ngay</string>
+    <string name="home_filter_title">Tìm kiếm và lọc</string>
+    <string name="home_search_hint">Tìm món ăn hoặc nhà hàng…</string>
+    <string name="home_browse_title">Khám phá món ăn</string>
+    <string name="home_restaurant_name_placeholder">Nhà hàng</string>
+    <string name="home_category_all">Tất cả</string>
 </resources>

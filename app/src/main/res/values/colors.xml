@@ -2,20 +2,20 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="colorPrimary">#FF5722</color>
-    <color name="colorPrimaryDark">#E64A19</color>
-    <color name="colorAccent">#FFC107</color>
-    <color name="colorBackground">#F5F5F5</color>
-    <color name="colorTextPrimary">#212121</color>
-    <color name="colorTextSecondary">#757575</color>
-    <color name="colorBottomNav">#FFFFFF</color>
-    <color name="colorCardBackground">#FFFFFF</color>
+    <color name="colorPrimary">#FF6B35</color>
+    <color name="colorPrimaryDark">#E85A2A</color>
+    <color name="colorAccent">#FFD166</color>
+    <color name="colorBackground">#F7F8FA</color>
+    <color name="colorTextPrimary">#1F2937</color>
+    <color name="colorTextSecondary">#6B7280</color>
+    <color name="colorBottomNav">#FFFFFFFF</color>
+    <color name="colorCardBackground">#FFFFFFFF</color>
 
     <color name="background_gray">#F5F5F5</color>  <!-- Màu xám nhạt -->
     <color name="text_primary">#212121</color>      <!-- Màu chữ đen chính -->
     <color name="color_primary">#FF6200EE</color>    <!-- Màu tím chính -->
     <color name="text_secondary">#757575</color>     <!-- Màu xám cho chữ phụ -->
-    <color name="border_color">#E0E0E0</color>
+    <color name="border_color">#E5E7EB</color>
     <color name="badge_blue_bg">#E6F1FB</color>
     <color name="badge_blue_text">#0C447C</color>
     <color name="badge_green_bg">#EAF3DE</color>
@@ -26,4 +26,9 @@
     <color name="badge_red_text">#791F1F</color>
     <color name="badge_purple_bg">#EEEDFE</color>
     <color name="badge_purple_text">#3C3489</color>
+
+    <color name="toolbar_title">#FFFFFFFF</color>
+    <color name="surface_elevated">#FFFFFFFF</color>
+    <color name="divider_subtle">#E5E7EB</color>
+    <color name="nav_item_checked_bg">#FFF1EB</color>
 </resources>

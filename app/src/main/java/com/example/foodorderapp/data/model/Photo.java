@@ -1,17 +1,20 @@
 package com.example.foodorderapp.data.model;
 
 public class Photo {
-    private Integer resourceId;
+    private String imageUrl;
 
-    public Photo(Integer resourceId) {
-        this.resourceId = resourceId;
+    public Photo() {
     }
 
-    public Integer getResourceId() {
-        return resourceId;
+    public Photo(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
-    public void setResourceId(Integer resourceId) {
-        this.resourceId = resourceId;
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

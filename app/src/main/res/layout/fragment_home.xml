@@ -12,42 +12,50 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/space_lg">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Good Morning!\nWhat do you want to eat?"
+            android:text="@string/home_greeting"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/colorTextPrimary"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="@dimen/space_xl"/>
 
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/vp"
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FoodOrder.ElevatedCard"
             android:layout_width="match_parent"
-            android:layout_height="160dp"
-            />
-       <me.relex.circleindicator.CircleIndicator
-           android:id="@+id/circle_indicator"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_marginTop="20dp"
-           android:layout_marginBottom="10dp"
-           android:layout_gravity="center_horizontal"
-           app:ci_drawable="@drawable/circle_indicator_selected"
-           app:ci_drawable_unselected="@drawable/circle_indicator_unselected"
-           />
+            android:layout_height="220dp"
+            android:layout_marginBottom="@dimen/space_md"
+            app:cardCornerRadius="@dimen/radius_lg"
+            app:cardElevation="6dp">
+
+            <androidx.viewpager.widget.ViewPager
+                android:id="@+id/vp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <me.relex.circleindicator.CircleIndicator
+            android:id="@+id/circle_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp"
+            app:ci_drawable="@drawable/circle_indicator_selected"
+            app:ci_drawable_unselected="@drawable/circle_indicator_unselected" />
 
 
 
         <!-- Banner using MaterialCardView -->
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FoodOrder.ElevatedCard"
             android:layout_width="match_parent"
             android:layout_height="180dp"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="@dimen/radius_md"
             app:cardElevation="4dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="@dimen/space_xl"
             app:cardBackgroundColor="@color/colorPrimary">
 
             <RelativeLayout
@@ -59,7 +67,7 @@
                     android:id="@+id/tv_offer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Special Deal"
+                    android:text="@string/home_special_deal"
                     android:textColor="@color/white"
                     android:textSize="14sp" />
 
@@ -67,7 +75,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tv_offer"
-                    android:text="Get 50% Off\nOn Your First Order"
+                    android:text="@string/home_offer_detail"
                     android:textColor="@color/white"
                     android:textSize="22sp"
                     android:textStyle="bold"
@@ -77,7 +85,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:text="Order Now"
+                    android:text="@string/home_order_now"
                     android:textColor="@color/colorPrimary"
                     android:backgroundTint="@color/white"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -89,28 +97,42 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Categories"
+            android:text="@string/home_filter_title"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/colorTextPrimary"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="@dimen/space_md"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_categories"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.FoodOrder.TextInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="@dimen/space_md"
+            android:hint="@string/home_search_hint"
+            app:startIconDrawable="@drawable/ic_search">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_search_food"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionSearch"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Spinner
+            android:id="@+id/spinner_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_xl" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Popular Now"
+            android:text="@string/home_browse_title"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/colorTextPrimary"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="@dimen/space_md"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_popular"

@@ -18,18 +18,18 @@
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:background="@color/colorPrimary"
+            app:elevation="0dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
+                style="@style/Widget.FoodOrder.Toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="@color/colorPrimary"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                app:titleTextColor="@color/white"/>
+                app:popupTheme="@style/ThemeOverlay.Material3.Light" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -44,16 +44,15 @@
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
+            style="@style/Widget.FoodOrder.BottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorBottomNav"
-            app:itemIconTint="@color/selector_nav_item"
-            app:itemTextColor="@color/selector_nav_item"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:menu="@menu/menu_bottom_navigation"
-            app:elevation="8dp"/>
+            app:labelVisibilityMode="labeled"
+            app:elevation="10dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -61,8 +60,11 @@
         android:id="@+id/nav_bottom"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:background="@color/white"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        app:itemIconTint="@color/selector_nav_item"
+        app:itemTextColor="@color/colorTextPrimary"
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/activity_main_drawer" />
 
