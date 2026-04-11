@@ -34,6 +34,9 @@ android {
 }
 
 dependencies {
+    implementation("com.google.firebase:firebase-storage")
+    // Thư viện Glide để load ảnh siêu tốc
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.firebase:firebase-analytics")
