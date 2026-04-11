@@ -1,7 +1,6 @@
 package com.example.foodorderapp.data.model;
 
-import com.google.firebase.firestore.ServerTimestamp;
-import java.util.Date;
+import com.google.firebase.Timestamp;
 import java.util.List;
 
 public class Review {
@@ -9,78 +8,46 @@ public class Review {
     private String orderId;
     private String customerId;
     private String restaurantId;
-    private double rating; // Đánh giá 1-5 sao
+    private int rating;
     private String comment;
-    private List<String> tags; // Chứa các tag như "Ngon", "Giao nhanh"
+    private List<String> tags;
+    private Timestamp createdAt;
 
-    @ServerTimestamp
-    private Date createdAt;
+    public Review() {}
 
-    public String getReviewId() {
-        return reviewId;
-    }
-
-    public void setReviewId(String reviewId) {
-        this.reviewId = reviewId;
-    }
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(String restaurantId) {
+    public Review(String orderId, String customerId, String restaurantId,
+                  int rating, String comment, List<String> tags) {
+        this.orderId      = orderId;
+        this.customerId   = customerId;
         this.restaurantId = restaurantId;
+        this.rating       = rating;
+        this.comment      = comment;
+        this.tags         = tags;
+        this.createdAt    = Timestamp.now();
     }
 
-    public double getRating() {
-        return rating;
-    }
+    // Getters & Setters
+    public String getReviewId()      { return reviewId; }
+    public void setReviewId(String reviewId) { this.reviewId = reviewId; }
 
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
+    public String getOrderId()       { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
 
-    public String getComment() {
-        return comment;
-    }
+    public String getCustomerId()    { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+    public String getRestaurantId()  { return restaurantId; }
+    public void setRestaurantId(String restaurantId) { this.restaurantId = restaurantId; }
 
-    public List<String> getTags() {
-        return tags;
-    }
+    public int getRating()           { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
+    public String getComment()       { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+    public List<String> getTags()    { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Review() {} // Bắt buộc cho Firestore
-
-    // TODO: Nhớ bấm Alt + Insert -> Getter and Setter -> Ctrl + A nhé!
+    public Timestamp getCreatedAt()  { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }
