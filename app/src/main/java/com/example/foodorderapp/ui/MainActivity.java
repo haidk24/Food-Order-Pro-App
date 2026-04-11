@@ -1,12 +1,11 @@
 package com.example.foodorderapp.ui;
 
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -23,14 +22,14 @@ import com.example.foodorderapp.ui.fragment.MyOrderFragment;
 import com.example.foodorderapp.ui.fragment.ShoppingcartFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
     private BottomNavigationView bottomNavigationView;
-
-
-
+    private NavigationView navigationView;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -41,13 +40,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
 
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_bottom);
+        navigationView = findViewById(R.id.nav_bottom);
         navigationView.setNavigationItemSelectedListener(this);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        showUserInformation();
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -61,9 +62,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else if (id == R.id.nav_myorder) {
                 replaceFragment(new MyOrderFragment());
                 navigationView.setCheckedItem(R.id.nav_myorder);
-            } else if (id == R.id.nav_logout) {
-                // Xử lý logout
-                navigationView.setCheckedItem(R.id.nav_logout);
             }
             return true;
         });
@@ -73,9 +71,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             navigationView.setCheckedItem(R.id.nav_home);
             bottomNavigationView.setSelectedItemId(R.id.nav_home);
         }
-
-        
     }
+
+    private void showUserInformation() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+        View headerView = navigationView.getHeaderView(0);
+        TextView tvEmail = headerView.findViewById(R.id.textView);
+        tvEmail.setText(user.getEmail());
+    }
+
     private void replaceFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content_frame, fragment);
@@ -96,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             replaceFragment(new MyOrderFragment());
             bottomNavigationView.setSelectedItemId(R.id.nav_myorder);
         } else if (id == R.id.nav_logout) {
-            // Xử lý logout
+            performLogout();
         } else if (id == R.id.nav_replacepassword) {
             // Xử lý đổi mật khẩu
         }
@@ -106,16 +113,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void performLogout() {
-        // 1. Xóa trạng thái đăng nhập trong Firebase
-        com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
-
-        // 2. Chuyển về màn hình SignInActivity
-        android.content.Intent intent = new Intent(this, com.example.foodorderapp.ui.SignInActivity.class);
-
-        // 3. QUAN TRỌNG: Xóa toàn bộ lịch sử các Activity trước đó
-        // Để người dùng không thể nhấn nút "Back" quay lại trang Admin/Main
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(this, SignInActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
         startActivity(intent);
         finish();
     }
@@ -128,5 +128,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
     }
-
 }

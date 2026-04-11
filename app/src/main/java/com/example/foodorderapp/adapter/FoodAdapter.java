@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.foodorderapp.R;
 import com.example.foodorderapp.data.model.Food;
 
@@ -41,11 +42,11 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
         if (food == null) {
             return;
         }
-        holder.imgFood.setImageResource(food.getImage());
+        Glide.with(holder.imgFood.getContext()).load(food.getImageUrl()).into(holder.imgFood);
         holder.tvFoodName.setText(food.getName());
         holder.tvOldPrice.setText(String.format("%s VNĐ", food.getOldPrice()));
         holder.tvNewPrice.setText(String.format("%s VNĐ", food.getNewPrice()));
-        holder.tvDiscount.setText(food.getDiscount());
+        holder.tvDiscount.setText(String.format("Giảm %s%%", food.getDiscountPercent()));
 
         holder.itemView.setOnClickListener(v -> iClickItemFoodListener.onClickItemFood(food));
     }

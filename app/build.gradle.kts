@@ -37,7 +37,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.lifecycle.viewmodel)     // → sửa thành libs.lifecycle.viewmodel nếu alias là lifecycle-viewmodel
+    implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
@@ -59,5 +59,8 @@ dependencies {
     implementation("me.relex:circleindicator:2.1.6")
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
-
+    // Room database
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
 }

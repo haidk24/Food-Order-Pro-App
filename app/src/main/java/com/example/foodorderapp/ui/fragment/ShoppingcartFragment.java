@@ -1,66 +1,93 @@
 package com.example.foodorderapp.ui.fragment;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.foodorderapp.R;
+import com.example.foodorderapp.adapter.CartAdapter;
+import com.example.foodorderapp.data.database.FoodDatabase;
+import com.example.foodorderapp.data.model.Food;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ShoppingcartFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class ShoppingcartFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private RecyclerView rvCartItems;
+    private TextView tvTotalPrice;
+    private CartAdapter cartAdapter;
+    private List<Food> mListFoodCart;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ShoppingcartFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ShoppingcartFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ShoppingcartFragment newInstance(String param1, String param2) {
-        ShoppingcartFragment fragment = new ShoppingcartFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_shoppingcart, container, false);
+
+        initViews(view);
+        displayListFoodCart();
+
+        return view;
+    }
+
+    private void initViews(View view) {
+        rvCartItems = view.findViewById(R.id.rv_cart_items);
+        tvTotalPrice = view.findViewById(R.id.tv_total_price);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        rvCartItems.setLayoutManager(linearLayoutManager);
+    }
+
+    private void displayListFoodCart() {
+        mListFoodCart = FoodDatabase.getInstance(getContext()).foodDao().getListFoodCart();
+        cartAdapter = new CartAdapter(mListFoodCart, new CartAdapter.IClickCartListener() {
+            @Override
+            public void onClickMinusFood(Food food, int position) {
+                int count = food.getCount();
+                if (count <= 1) {
+                    return;
+                }
+                int newCount = count - 1;
+                food.setCount(newCount);
+                FoodDatabase.getInstance(getContext()).foodDao().updateFood(food);
+                cartAdapter.notifyItemChanged(position);
+                calculateTotalPrice();
+            }
+
+            @Override
+            public void onClickPlusFood(Food food, int position) {
+                int newCount = food.getCount() + 1;
+                food.setCount(newCount);
+                FoodDatabase.getInstance(getContext()).foodDao().updateFood(food);
+                cartAdapter.notifyItemChanged(position);
+                calculateTotalPrice();
+            }
+
+            @Override
+            public void onClickDeleteFood(Food food, int position) {
+                FoodDatabase.getInstance(getContext()).foodDao().deleteFood(food);
+                mListFoodCart.remove(position);
+                cartAdapter.notifyItemRemoved(position);
+                calculateTotalPrice();
+            }
+        });
+        rvCartItems.setAdapter(cartAdapter);
+        calculateTotalPrice();
+    }
+
+    private void calculateTotalPrice() {
+        int totalPrice = 0;
+        for (Food food : mListFoodCart) {
+            totalPrice += food.getNewPrice() * food.getCount();
         }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_shoppingcart, container, false);
+        tvTotalPrice.setText(String.format("%s VNĐ", totalPrice));
     }
 }

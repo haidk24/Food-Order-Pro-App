@@ -5,20 +5,24 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.foodorderapp.R;
-import com.example.foodorderapp.adapter.FoodAdapter;
 import com.example.foodorderapp.adapter.PhotoAdapter;
+import com.example.foodorderapp.adapter.RestaurantAdapter;
 import com.example.foodorderapp.data.model.Food;
 import com.example.foodorderapp.data.model.Photo;
+import com.example.foodorderapp.data.model.Restaurant;
 import com.example.foodorderapp.ui.activity.FoodDetailActivity;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +34,10 @@ public class HomeFragment extends Fragment {
     private CircleIndicator circleIndicator;
     private PhotoAdapter photoAdapter;
 
-    private RecyclerView rvCategories;
-    private FoodAdapter foodAdapter;
+    private RecyclerView rvPopular;
+    private RestaurantAdapter restaurantAdapter;
+    private List<Restaurant> mListRestaurant;
+    private FirebaseFirestore mFirestore;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -40,13 +46,14 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        mFirestore = FirebaseFirestore.getInstance();
 
         // Slide Image
         viewPager = view.findViewById(R.id.vp);
@@ -58,19 +65,58 @@ public class HomeFragment extends Fragment {
         circleIndicator.setViewPager(viewPager);
         photoAdapter.registerDataSetObserver(circleIndicator.getDataSetObserver());
 
-        // Categories RecyclerView (Grid 2 columns)
-        rvCategories = view.findViewById(R.id.rv_categories);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
-        rvCategories.setLayoutManager(gridLayoutManager);
+        // Restaurants RecyclerView
+        rvPopular = view.findViewById(R.id.rv_popular);
+        initRestaurantRecyclerView();
+        getListRestaurantFromFirestore();
+    }
 
-        foodAdapter = new FoodAdapter(getListFood(), food -> {
+    private void initRestaurantRecyclerView() {
+        mListRestaurant = new ArrayList<>();
+        restaurantAdapter = new RestaurantAdapter(getContext(), mListRestaurant, food -> {
             Intent intent = new Intent(getContext(), FoodDetailActivity.class);
             Bundle bundle = new Bundle();
             bundle.putSerializable("object_food", food);
             intent.putExtras(bundle);
             startActivity(intent);
         });
-        rvCategories.setAdapter(foodAdapter);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false);
+        rvPopular.setLayoutManager(linearLayoutManager);
+        rvPopular.setAdapter(restaurantAdapter);
+    }
+
+    private void getListRestaurantFromFirestore() {
+        mFirestore.collection("restaurants")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    mListRestaurant.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Restaurant restaurant = new Restaurant();
+                        restaurant.setId(document.getId());
+                        restaurant.setName(document.getString("name"));
+                        
+                        List<Food> foodList = new ArrayList<>();
+                        // Lấy sub-collection "foods" của từng nhà hàng
+                        document.getReference().collection("foods").get()
+                                .addOnSuccessListener(foodSnapshots -> {
+                                    for (QueryDocumentSnapshot foodDoc : foodSnapshots) {
+                                        Food food = foodDoc.toObject(Food.class);
+                                        foodList.add(food);
+                                    }
+                                    restaurant.setFoods(foodList);
+                                    restaurantAdapter.notifyDataSetChanged();
+                                });
+                        
+                        mListRestaurant.add(restaurant);
+                    }
+                    restaurantAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private List<Photo> getListPhoto() {
@@ -78,19 +124,6 @@ public class HomeFragment extends Fragment {
         list.add(new Photo(R.drawable.banghoa));
         list.add(new Photo(R.drawable.giatocrong));
         list.add(new Photo(R.drawable.hoanhon));
-        return list;
-    }
-
-    private List<Food> getListFood() {
-        List<Food> list = new ArrayList<>();
-        String longDescription = "Bò cuộn phô mai xốt nấm với hương vị tuyệt vời, chút béo, thơm phức, ngọt thịt chính là món ăn ngon mà chúng tôi muốn giới thiệu đến bạn hôm nay. Cùng Bếp Trưởng Á Âu vào bếp và thực hiện món ăn này ngay thôi nào cả nhà. Bạn đã bao giờ từng tìm kiếm cách làm bò cuộn phô mai nhưng vẫn chưa thể thực hiện theo vì các công đoạn quá tỉ mỉ và cầu kì? Thực chất những món Âu đều có điểm chung là có khá nhiều bước thực hiện, tuy nhiên các bước này lại không quá khó. Cùng với công thức cụ thể và video hướng dẫn trực quan dưới đây, hy vọng bạn sẽ có được thành phẩm hoàn hảo nhất cho bữa ăn gia đình.";
-        
-        list.add(new Food(1, "Bò cuộn phô mai", R.drawable.banh, 250000, 213000, "Giảm 15%", longDescription));
-        list.add(new Food(2, "Sườn xào chua ngọt", R.drawable.banh, 100000, 90000, "Giảm 10%", longDescription));
-        list.add(new Food(3, "Bánh mì kẹp thịt", R.drawable.banh, 30000, 25000, "Giảm 5%", longDescription));
-        list.add(new Food(4, "Gà rán KFC", R.drawable.banh, 150000, 120000, "Giảm 20%", longDescription));
-        list.add(new Food(5, "Pizza hải sản", R.drawable.banh, 200000, 180000, "Giảm 10%", longDescription));
-        list.add(new Food(6, "Mỳ Ý sốt bò băm", R.drawable.banh, 80000, 70000, "Giảm 12%", longDescription));
         return list;
     }
 }
