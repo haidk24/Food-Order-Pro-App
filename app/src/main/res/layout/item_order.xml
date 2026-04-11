@@ -71,6 +71,16 @@
             tools:text="150.000 đ" />
 
         <TextView
+            android:id="@+id/tvCustomerInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="#455A64"
+            android:textSize="12sp"
+            app:layout_constraintTop_toBottomOf="@+id/tvTotalAmount"
+            tools:text="Khach: Nguyen Van A - 0900000000\nDia chi: 123 ABC" />
+
+        <TextView
             android:id="@+id/tvOrderStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,7 +91,7 @@
             android:textColor="#E65100"
             android:textSize="13sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@+id/tvTotalAmount"
+            app:layout_constraintTop_toBottomOf="@+id/tvCustomerInfo"
             tools:text="ĐANG CHỜ XÁC NHẬN" />
 
         <com.google.android.material.button.MaterialButton

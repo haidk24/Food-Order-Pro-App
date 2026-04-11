@@ -23,6 +23,8 @@ public class AuthViewModel {
 
     public Task<User> getCurrentUserProfile() {
         return authRepository.getCurrentUserProfile();
+    }
+
     public Task<Void> updateUser(User user) {
         return authRepository.updateUser(user);
     }

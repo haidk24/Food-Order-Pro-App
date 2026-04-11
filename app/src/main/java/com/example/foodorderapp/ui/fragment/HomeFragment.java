@@ -361,6 +361,7 @@ public class HomeFragment extends Fragment {
                                         if (TextUtils.isEmpty(food.getFoodId())) {
                                             food.setFoodId(foodDoc.getId());
                                         }
+                                        food.setRestaurantId(document.getId());
                                         foodList.add(food);
                                     }
 

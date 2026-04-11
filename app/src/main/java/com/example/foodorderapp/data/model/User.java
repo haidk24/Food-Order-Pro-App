@@ -1,7 +1,5 @@
 package com.example.foodorderapp.data.model;
 
-import com.google.firebase.firestore.Exclude;
-
 public class User {
     private String uid;
     private String displayName;
@@ -79,6 +77,15 @@ public class User {
     public void setOrderCount(int orderCount) {
         this.orderCount = orderCount;
     }
+
+    public Object getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Object createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public boolean isBanned() {
         return "banned".equals(status);
     }

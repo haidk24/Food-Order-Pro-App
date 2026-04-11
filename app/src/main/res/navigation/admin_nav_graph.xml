@@ -46,7 +46,7 @@
     </fragment>
 
     <fragment android:id="@+id/nav_report"
-        android:name="com.example.foodorderapp.ui.admin.ReportFragment"
+        android:name="com.example.foodorderapp.ui.fragment.ReportFragment"
         android:label="Báo cáo"/>
 
 </navigation>

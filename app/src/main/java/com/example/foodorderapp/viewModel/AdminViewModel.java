@@ -112,12 +112,8 @@ public class AdminViewModel extends ViewModel {
 
     private void fetchUserPage(boolean isFirstPage) {
         isPaging = true;
-        if (!isFirstPage) isLoadingMore.setValue(true);
-
-        Query query = db.collection("users").orderBy("displayName", Query.Direction.ASCENDING);
-        if (!"all".equals(currentRoleFilter)) {
-            query = db.collection("users").whereEqualTo("role", currentRoleFilter)
-                    .orderBy("displayName", Query.Direction.ASCENDING);
+        if (!isFirstPage) {
+            isLoadingMore.setValue(true);
         }
 
         Query query = db.collection("users");
@@ -136,13 +132,11 @@ public class AdminViewModel extends ViewModel {
                 }
             }
 
-            List<User> current = isFirstPage ? new ArrayList<>() : userList.getValue();
-            List<User> merged = new ArrayList<>(current != null ? current : new ArrayList<>());
-            merged.addAll(newUsers);
+            Collections.sort(users, (a, b) -> Long.compare(getCreatedAtMillis(b), getCreatedAtMillis(a)));
 
-            userList.setValue(merged);
-            lastUserDocument = docs.isEmpty() ? null : docs.get(docs.size() - 1);
-            hasMoreUsers.setValue(docs.size() == PAGE_SIZE);
+            userList.setValue(users);
+            lastUserDocument = null;
+            hasMoreUsers.setValue(false);
             isLoadingMore.setValue(false);
             isPaging = false;
         }).addOnFailureListener(e -> {

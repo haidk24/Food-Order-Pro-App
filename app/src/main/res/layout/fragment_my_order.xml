@@ -11,13 +11,26 @@
         android:id="@+id/tv_history_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Order History"
+        android:text="Lich su don hang"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/colorTextPrimary"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_margin="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_empty_orders"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ban chua co don hang nao"
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="15sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tv_history_title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_orders"

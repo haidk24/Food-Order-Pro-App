@@ -25,6 +25,8 @@ public class AuthRepository {
 
     public Task<Void> updateFields(String uid, Map<String, Object> updates) {
         return authFirebaseDataSource.updateFields(uid, updates);
+    }
+
     public Task<User> getCurrentUserProfile() {
         return authFirebaseDataSource.getCurrentUserProfile();
     }

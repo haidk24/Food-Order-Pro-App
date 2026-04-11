@@ -20,6 +20,7 @@ public class Food implements Serializable {
     private int discountPercent;
     private String imageUrl;
     private String category;
+    private String restaurantId;
     @com.google.firebase.firestore.PropertyName("isAvailable")
     private boolean isAvailable;
     private int orderCount;
@@ -125,6 +126,14 @@ public class Food implements Serializable {
         this.category = category;
     }
 
+    public String getRestaurantId() {
+        return restaurantId;
+    }
+
+    public void setRestaurantId(String restaurantId) {
+        this.restaurantId = restaurantId;
+    }
+
 
     @com.google.firebase.firestore.PropertyName("isAvailable")
     public boolean isAvailable() {
@@ -154,13 +163,20 @@ public class Food implements Serializable {
 
     @Ignore
     public Food(String foodId, String name, String description, double price, String imageUrl, String category, boolean isAvailable, int orderCount) {
-        this(foodId, name, description, price, imageUrl, category, isAvailable, orderCount, price, price, 0);
+        this(foodId, name, description, price, imageUrl, category, isAvailable, orderCount, price, price, 0, null);
     }
 
     @Ignore
     public Food(String foodId, String name, String description, double price, String imageUrl,
                 String category, boolean isAvailable, int orderCount,
                 double oldPrice, double newPrice, int discountPercent) {
+        this(foodId, name, description, price, imageUrl, category, isAvailable, orderCount, oldPrice, newPrice, discountPercent, null);
+    }
+
+    @Ignore
+    public Food(String foodId, String name, String description, double price, String imageUrl,
+                String category, boolean isAvailable, int orderCount,
+                double oldPrice, double newPrice, int discountPercent, String restaurantId) {
         this.foodId = foodId == null ? "" : foodId;
         this.name = name;
         this.description = description;
@@ -170,6 +186,7 @@ public class Food implements Serializable {
         this.discountPercent = Math.max(discountPercent, 0);
         this.imageUrl = imageUrl;
         this.category = category;
+        this.restaurantId = restaurantId;
         this.isAvailable = isAvailable;
         this.orderCount = orderCount;
         this.count = 0;
