@@ -22,7 +22,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -42,18 +44,24 @@ public class SignInActivity extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    Intent data = result.getData();
-                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                    try {
-                        GoogleSignInAccount account = task.getResult(ApiException.class);
-                        if (account != null) {
-                            firebaseAuthWithGoogle(account.getIdToken());
-                        }
-                    } catch (ApiException e) {
-                        Log.w("GoogleSignIn", "Google sign in failed", e);
-                        Toast.makeText(this, "Đăng nhập Google thất bại", Toast.LENGTH_SHORT).show();
+                setLoading(false);
+                Intent data = result.getData();
+                if (data == null) {
+                    Toast.makeText(this, "Ban da huy dang nhap Google", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    if (account == null || account.getIdToken() == null || account.getIdToken().trim().isEmpty()) {
+                        Toast.makeText(this, "Khong lay duoc token Google. Kiem tra cau hinh Firebase/Auth.", Toast.LENGTH_LONG).show();
+                        return;
                     }
+                    firebaseAuthWithGoogle(account.getIdToken());
+                } catch (ApiException e) {
+                    Log.w("GoogleSignIn", "Google sign in failed. code=" + e.getStatusCode(), e);
+                    Toast.makeText(this, getGoogleErrorMessage(e), Toast.LENGTH_LONG).show();
                 }
             }
     );
@@ -77,9 +85,14 @@ public class SignInActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Cấu hình Google Sign In
+        String webClientId = getString(R.string.default_web_client_id);
+        if (webClientId == null || webClientId.trim().isEmpty() || webClientId.contains("YOUR_")) {
+            Toast.makeText(this, "Thieu default_web_client_id. Khong the dang nhap Google.", Toast.LENGTH_LONG).show();
+            btnGoogle.setEnabled(false);
+        }
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestIdToken(webClientId)
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -91,19 +104,27 @@ public class SignInActivity extends AppCompatActivity {
         );
 
         btnGoogle.setOnClickListener(v -> {
-            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-            googleSignInLauncher.launch(signInIntent);
+            setLoading(true);
+            mGoogleSignInClient.signOut().addOnCompleteListener(unused -> {
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                googleSignInLauncher.launch(signInIntent);
+            });
         });
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
+        if (idToken == null || idToken.trim().isEmpty()) {
+            Toast.makeText(this, "Token Google khong hop le", Toast.LENGTH_SHORT).show();
+            return;
+        }
         setLoading(true);
         authViewModel.signInWithGoogle(idToken).addOnCompleteListener(task -> {
             setLoading(false);
             if (task.isSuccessful()) {
                 handleLoginSuccess(task.getResult());
             } else {
-                Toast.makeText(this, "Xác thực với hệ thống thất bại", Toast.LENGTH_SHORT).show();
+                String err = task.getException() != null ? task.getException().getMessage() : "Xac thuc voi he thong that bai";
+                Toast.makeText(this, err, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -199,5 +220,25 @@ public class SignInActivity extends AppCompatActivity {
         }
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
+    }
+
+    private String getGoogleErrorMessage(ApiException e) {
+        int code = e.getStatusCode();
+        if (code == GoogleSignInStatusCodes.SIGN_IN_CANCELLED || code == CommonStatusCodes.CANCELED) {
+            return "Ban da huy dang nhap Google";
+        }
+        if (code == CommonStatusCodes.NETWORK_ERROR) {
+            return "Loi mang khi dang nhap Google";
+        }
+        if (code == CommonStatusCodes.DEVELOPER_ERROR || code == 10) {
+            return "Cau hinh Google Sign-In chua dung (SHA-1/Web Client ID)";
+        }
+        if (code == CommonStatusCodes.SIGN_IN_REQUIRED) {
+            return "Vui long chon tai khoan Google";
+        }
+        if (code == CommonStatusCodes.INVALID_ACCOUNT) {
+            return "Tai khoan Google khong hop le";
+        }
+        return "Dang nhap Google that bai (code " + code + ")";
     }
 }
