@@ -51,8 +51,10 @@ public class SignInActivity extends AppCompatActivity {
                             firebaseAuthWithGoogle(account.getIdToken());
                         }
                     } catch (ApiException e) {
-                        Log.w("GoogleSignIn", "Google sign in failed", e);
-                        Toast.makeText(this, "Đăng nhập Google thất bại", Toast.LENGTH_SHORT).show();
+                        // Log lỗi chi tiết để debug
+                        Log.e("GoogleSignIn", "Status code: " + e.getStatusCode());
+                        Log.e("GoogleSignIn", "Error message: " + e.getMessage());
+                        Toast.makeText(this, "Lỗi đăng nhập Google (Mã: " + e.getStatusCode() + ")", Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -78,11 +80,15 @@ public class SignInActivity extends AppCompatActivity {
         });
 
         // Cấu hình Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        try {
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
+            mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        } catch (Exception e) {
+            Log.e("GoogleSignIn", "Lỗi cấu hình Google Sign In: " + e.getMessage());
+        }
 
         btnSignIn.setOnClickListener(v -> attemptSignIn());
 
@@ -91,8 +97,10 @@ public class SignInActivity extends AppCompatActivity {
         );
 
         btnGoogle.setOnClickListener(v -> {
-            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-            googleSignInLauncher.launch(signInIntent);
+            mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                googleSignInLauncher.launch(signInIntent);
+            });
         });
     }
 
@@ -103,7 +111,8 @@ public class SignInActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 handleLoginSuccess(task.getResult());
             } else {
-                Toast.makeText(this, "Xác thực với hệ thống thất bại", Toast.LENGTH_SHORT).show();
+                String error = task.getException() != null ? task.getException().getMessage() : "Xác thực thất bại";
+                Toast.makeText(this, "Hệ thống: " + error, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -111,17 +120,14 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        try {
-            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                setLoading(true);
-                authViewModel.getCurrentUserProfile().addOnCompleteListener(task -> {
-                    setLoading(false);
-                    if (task.isSuccessful()) {
-                        handleLoginSuccess(task.getResult());
-                    }
-                });
-            }
-        } catch (IllegalStateException ignored) {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            setLoading(true);
+            authViewModel.getCurrentUserProfile().addOnCompleteListener(task -> {
+                setLoading(false);
+                if (task.isSuccessful()) {
+                    handleLoginSuccess(task.getResult());
+                }
+            });
         }
     }
 
@@ -146,7 +152,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private void handleLoginSuccess(User user) {
         if (user == null) {
-            Toast.makeText(this, "Không thể lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không thể tải thông tin người dùng", Toast.LENGTH_SHORT).show();
             return;
         }
         navigateByRole(user.getRole());
@@ -155,39 +161,22 @@ public class SignInActivity extends AppCompatActivity {
     private void navigateByRole(String role) {
         String normalizedRole = role == null ? "" : role.trim().toLowerCase();
         Intent intent;
-
         if ("admin".equals(normalizedRole)) {
-            intent = new Intent(SignInActivity.this, AdminActivity.class);
-        } else if ("restaurant".equals(normalizedRole)) {
-            // Cần đảm bảo có MenuActivity hoặc thay bằng MainActivity
-            intent = new Intent(SignInActivity.this, MainActivity.class); 
+            intent = new Intent(this, AdminActivity.class);
         } else {
-            intent = new Intent(SignInActivity.this, MainActivity.class);
+            intent = new Intent(this, MainActivity.class);
         }
-
         startActivity(intent);
         finish();
     }
 
     private boolean isInputValid(String email, String password) {
-        if (email.isEmpty()) {
-            edtSignInEmail.setError("Không được để trống email");
-            edtSignInEmail.requestFocus();
-            return false;
-        }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             edtSignInEmail.setError("Email không hợp lệ");
-            edtSignInEmail.requestFocus();
-            return false;
-        }
-        if (password.isEmpty()) {
-            edtSignInPassword.setError("Không được để trống mật khẩu");
-            edtSignInPassword.requestFocus();
             return false;
         }
         if (password.length() < 6) {
-            edtSignInPassword.setError("Mật khẩu phải >= 6 ký tự");
-            edtSignInPassword.requestFocus();
+            edtSignInPassword.setError("Mật khẩu ít nhất 6 ký tự");
             return false;
         }
         return true;
