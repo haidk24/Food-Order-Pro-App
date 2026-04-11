@@ -4,19 +4,25 @@ import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Restaurant {
-    private String restaurantId;
-    private String ownerId;
-    private String name;
-    private String imageUrl;
-    private Address address;
-    private GeoPoint location;
-    private String status;
-    private double rating;
-    private List<Food> foods = new ArrayList<>();
+    // Keep fields public for compatibility with merged code paths.
+    public String restaurantId;
+    public String ownerId;
+    public String name;
+    public String phone;
+    public String imageUrl;
+    public Object address;
+    public GeoPoint location;
+    public String status;
+    public double rating;
+    public boolean hasLicence;
+    public Object createdAt;
+    public List<Food> foods = new ArrayList<>();
 
-    public Restaurant() {}
+    public Restaurant() {
+    }
 
     public String getOwnerId() {
         return ownerId;
@@ -43,7 +49,7 @@ public class Restaurant {
     }
 
     public Address getAddress() {
-        return address;
+        return address instanceof Address ? (Address) address : null;
     }
 
     public void setAddress(Address address) {
@@ -82,21 +88,81 @@ public class Restaurant {
         this.restaurantId = restaurantId;
     }
 
-    // Compatibility alias for older merged code paths.
     public String getId() {
         return restaurantId;
     }
 
-    // Compatibility alias for older merged code paths.
     public void setId(String id) {
         this.restaurantId = id;
     }
 
     public List<Food> getFoods() {
-        return foods;
+        return foods == null ? new ArrayList<>() : foods;
     }
 
     public void setFoods(List<Food> foods) {
         this.foods = foods == null ? new ArrayList<>() : foods;
+    }
+
+    public String getAddressText() {
+        if (address == null) {
+            return "Chua cap nhat";
+        }
+
+        if (address instanceof Address) {
+            Address a = (Address) address;
+            return joinAddressParts(a.getStreet(), a.getWard(), a.getDistrict(), a.getCity());
+        }
+
+        if (address instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) address;
+            return joinAddressParts(
+                    toText(map.get("street")),
+                    toText(map.get("ward")),
+                    toText(map.get("district")),
+                    toText(map.get("city"))
+            );
+        }
+
+        return String.valueOf(address);
+    }
+
+    public String getStatusText() {
+        if (status == null) {
+            return "Khong xac dinh";
+        }
+        switch (status) {
+            case "pending":
+                return "Cho duyet";
+            case "active":
+                return "Dang hoat dong";
+            case "suspended":
+                return "Tam ngung";
+            default:
+                return status;
+        }
+    }
+
+    private String joinAddressParts(String street, String ward, String district, String city) {
+        StringBuilder builder = new StringBuilder();
+        appendPart(builder, street);
+        appendPart(builder, ward);
+        appendPart(builder, district);
+        appendPart(builder, city);
+        return builder.length() == 0 ? "Chua cap nhat" : builder.toString();
+    }
+
+    private void appendPart(StringBuilder builder, String part) {
+        if (part == null || part.trim().isEmpty()) {
+            return;
+        }
+        if (builder.length() > 0) {
+            builder.append(", ");
+        }
+        builder.append(part.trim());
+    }
+
+    private String toText(Object value) {
+        return value == null ? "" : String.valueOf(value);
     }
 }

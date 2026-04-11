@@ -54,8 +54,10 @@ public class UserDetailFragment extends Fragment {
 
         // Lấy uid từ arguments (Navigation Safe Args)
         if (getArguments() != null) {
-            String uid = UserDetailFragmentArgs.fromBundle(getArguments()).getUid();
-            viewModel.loadUserDetail(uid);
+            String uid = getArguments().getString("uid", "");
+            if (!uid.isEmpty()) {
+                viewModel.loadUserDetail(uid);
+            }
         }
     }
 

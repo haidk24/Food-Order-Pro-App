@@ -13,9 +13,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -105,37 +108,37 @@ public class AdminViewModel extends ViewModel {
     }
 
     public void loadNextPageUsers() {
-        if (isPaging || Boolean.FALSE.equals(hasMoreUsers.getValue())) return;
-        fetchUserPage(false);
+        // Current strategy loads full list in one request to avoid missing users
+        // when some docs do not have createdAt.
     }
 
     private void fetchUserPage(boolean isFirstPage) {
         isPaging = true;
-        if (!isFirstPage) isLoadingMore.setValue(true);
-
-        Query query = db.collection("users").orderBy("createdAt", Query.Direction.DESCENDING);
-        if (!"all".equals(currentRoleFilter)) {
-            query = db.collection("users").whereEqualTo("role", currentRoleFilter)
-                      .orderBy("createdAt", Query.Direction.DESCENDING);
+        if (!isFirstPage) {
+            isLoadingMore.setValue(true);
         }
 
-        if (lastUserDocument != null) query = query.startAfter(lastUserDocument);
+        Query query = db.collection("users");
+        if (!"all".equals(currentRoleFilter)) {
+            query = query.whereEqualTo("role", currentRoleFilter);
+        }
 
-        query.limit(PAGE_SIZE).get().addOnSuccessListener(snapshot -> {
+        query.get().addOnSuccessListener(snapshot -> {
             List<DocumentSnapshot> docs = snapshot.getDocuments();
-            List<User> newUsers = new ArrayList<>();
+            List<User> users = new ArrayList<>();
             for (DocumentSnapshot doc : docs) {
                 User u = doc.toObject(User.class);
-                if (u != null) { u.setUid(doc.getId()); newUsers.add(u); }
+                if (u != null) {
+                    u.setUid(doc.getId());
+                    users.add(u);
+                }
             }
 
-            List<User> current = isFirstPage ? new ArrayList<>() : userList.getValue();
-            List<User> merged = new ArrayList<>(current != null ? current : new ArrayList<>());
-            merged.addAll(newUsers);
-            
-            userList.setValue(merged);
-            lastUserDocument = docs.isEmpty() ? null : docs.get(docs.size() - 1);
-            hasMoreUsers.setValue(docs.size() == PAGE_SIZE);
+            Collections.sort(users, (a, b) -> Long.compare(getCreatedAtMillis(b), getCreatedAtMillis(a)));
+
+            userList.setValue(users);
+            lastUserDocument = null;
+            hasMoreUsers.setValue(false);
             isLoadingMore.setValue(false);
             isPaging = false;
         }).addOnFailureListener(e -> {
@@ -143,6 +146,23 @@ public class AdminViewModel extends ViewModel {
             isLoadingMore.setValue(false);
             isPaging = false;
         });
+    }
+
+    private long getCreatedAtMillis(User user) {
+        if (user == null || user.getCreatedAt() == null) {
+            return 0L;
+        }
+        Object value = user.getCreatedAt();
+        if (value instanceof Timestamp) {
+            return ((Timestamp) value).toDate().getTime();
+        }
+        if (value instanceof Date) {
+            return ((Date) value).getTime();
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return 0L;
     }
 
     private void observePendingRestaurants() {
