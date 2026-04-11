@@ -128,43 +128,20 @@
                     android:background="@color/divider_subtle" />
             </LinearLayout>
 
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoogle"
+                style="@style/Widget.FoodOrder.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnGoogle"
-                    style="@style/Widget.FoodOrder.OutlinedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/signup_google"
-                    android:textColor="@color/colorTextPrimary"
-                    app:backgroundTint="@color/white"
-                    app:icon="@drawable/ic_google"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="20dp"
-                    app:iconTint="@null" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFacebook"
-                    style="@style/Widget.FoodOrder.OutlinedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:text="@string/signup_facebook"
-                    android:textColor="@color/colorTextPrimary"
-                    app:backgroundTint="@color/white"
-                    app:icon="@drawable/ic_facebook"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="20dp"
-                    app:iconTint="@null" />
-            </LinearLayout>
+                android:text="Tiếp tục với Google"
+                android:textColor="@color/colorTextPrimary"
+                app:backgroundTint="@color/white"
+                app:icon="@drawable/ic_google"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconSize="20dp"
+                app:iconTint="@null" />
 
             <TextView
                 android:id="@+id/tvGoToSignUp"

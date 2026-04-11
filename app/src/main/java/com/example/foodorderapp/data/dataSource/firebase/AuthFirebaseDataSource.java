@@ -4,7 +4,11 @@ import com.example.foodorderapp.data.model.User;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Map;
@@ -36,25 +40,16 @@ public class AuthFirebaseDataSource {
 
         TaskCompletionSource<Void> taskSource = new TaskCompletionSource<>();
 
-        // 1. tạo tài khoản Firebase Auth
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-
                     if (task.isSuccessful()) {
-
-                        // 2. lấy uid
                         String uid = auth.getCurrentUser().getUid();
                         user.setUid(uid);
-
-                        // 3. lưu user vào Firestore
                         db.collection("users")
                                 .document(uid)
                                 .set(user)
-                                .addOnSuccessListener(aVoid -> {
-                                    taskSource.setResult(null); // SUCCESS
-                                })
+                                .addOnSuccessListener(aVoid -> taskSource.setResult(null))
                                 .addOnFailureListener(taskSource::setException);
-
                     } else {
                         taskSource.setException(task.getException());
                     }
@@ -63,7 +58,6 @@ public class AuthFirebaseDataSource {
         return taskSource.getTask();
     }
 
-    // ================= LOGIN =================
     public Task<User> login(String email, String password) {
         if (auth == null || db == null) {
             return Tasks.forException(new IllegalStateException("Firebase chua duoc cau hinh. Vui long them google-services.json"));
@@ -71,27 +65,15 @@ public class AuthFirebaseDataSource {
 
         TaskCompletionSource<User> taskSource = new TaskCompletionSource<>();
 
-        // 1. đăng nhập
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-
                     if (task.isSuccessful()) {
-
                         String uid = auth.getCurrentUser().getUid();
-
-                        // 2. lấy thông tin user
                         db.collection("users")
                                 .document(uid)
                                 .get()
-                                .addOnSuccessListener(document -> {
-
-                                    User user = document.toObject(User.class);
-
-                                    // 3. trả về user
-                                    taskSource.setResult(user);
-                                })
+                                .addOnSuccessListener(document -> taskSource.setResult(document.toObject(User.class)))
                                 .addOnFailureListener(taskSource::setException);
-
                     } else {
                         taskSource.setException(task.getException());
                     }
@@ -100,9 +82,50 @@ public class AuthFirebaseDataSource {
         return taskSource.getTask();
     }
 
+    public Task<User> signInWithGoogle(String idToken) {
+        if (auth == null || db == null) {
+            return Tasks.forException(new IllegalStateException("Firebase error"));
+        }
+
+        TaskCompletionSource<User> taskSource = new TaskCompletionSource<>();
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+
+        auth.signInWithCredential(credential).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser firebaseUser = auth.getCurrentUser();
+                String uid = firebaseUser.getUid();
+
+                db.collection("users").document(uid).get().addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        taskSource.setResult(document.toObject(User.class));
+                    } else {
+                        // Tạo user mới nếu lần đầu đăng nhập Google
+                        User newUser = new User();
+                        newUser.setUid(uid);
+                        newUser.setDisplayName(firebaseUser.getDisplayName());
+                        newUser.setEmail(firebaseUser.getEmail());
+                        newUser.setPhone("");
+                        newUser.setRole("customer");
+                        newUser.setStatus("active");
+                        newUser.setOrderCount(0);
+                        newUser.setCreatedAt(FieldValue.serverTimestamp());
+
+                        db.collection("users").document(uid).set(newUser)
+                                .addOnSuccessListener(aVoid -> taskSource.setResult(newUser))
+                                .addOnFailureListener(taskSource::setException);
+                    }
+                }).addOnFailureListener(taskSource::setException);
+            } else {
+                taskSource.setException(task.getException());
+            }
+        });
+
+        return taskSource.getTask();
+    }
+
     public Task<User> getCurrentUserProfile() {
         if (auth == null || db == null) {
-            return Tasks.forException(new IllegalStateException("Firebase chua duoc cau hinh. Vui long them google-services.json"));
+            return Tasks.forException(new IllegalStateException("Firebase chua duoc cau hinh"));
         }
 
         if (auth.getCurrentUser() == null) {

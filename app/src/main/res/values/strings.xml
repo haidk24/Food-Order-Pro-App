@@ -1,12 +1,15 @@
 <resources>
+    <string name="default_web_client_id">171195324246-n99qs1826toqepd1pi1fcolb2vj19onp.apps.googleusercontent.com</string>
     <string name="app_name">Food Order Pro</string>
     <string name="signup_title">Đăng ký</string>
     <string name="signup_subtitle">Tạo tài khoản mới để đặt món nhanh hơn</string>
+    <string name="signup_hint_fullname">Họ và tên</string>
     <string name="signup_hint_full_name">Họ và tên</string>
     <string name="signup_hint_email">Email</string>
     <string name="signup_hint_password">Mật khẩu</string>
     <string name="signup_hint_confirm_password">Nhập lại mật khẩu</string>
     <string name="signup_create_account">Tạo tài khoản</string>
+    <string name="signup_button">Đăng ký</string>
     <string name="signup_with_social">Hoặc đăng ký với</string>
     <string name="signup_google">Google</string>
     <string name="signup_facebook">Facebook</string>

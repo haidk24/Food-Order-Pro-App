@@ -9,7 +9,7 @@
     tools:context=".ui.SignUpActivity">
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/signupScroll"
+        android:id="@+id/signUpScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
@@ -31,38 +31,42 @@
                 android:id="@+id/tvSignUpTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/signup_title"
                 android:textColor="@color/colorTextPrimary"
-                android:textSize="30sp"
-                android:layout_gravity="center"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvSignUpSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
+                android:gravity="center"
                 android:text="@string/signup_subtitle"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutFullName"
+                android:id="@+id/layoutSignUpFullName"
                 style="@style/Widget.FoodOrder.TextInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:hint="@string/signup_hint_full_name">
+                android:layout_marginTop="24dp"
+                android:hint="@string/signup_hint_fullname">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtFullName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPersonName" />
+                    android:importantForAutofill="yes"
+                    android:inputType="textPersonName|textCapWords"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutEmail"
+                android:id="@+id/layoutSignUpEmail"
                 style="@style/Widget.FoodOrder.TextInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -73,11 +77,13 @@
                     android:id="@+id/edtEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress" />
+                    android:importantForAutofill="yes"
+                    android:inputType="textEmailAddress"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutPassword"
+                android:id="@+id/layoutSignUpPassword"
                 style="@style/Widget.FoodOrder.TextInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -89,11 +95,13 @@
                     android:id="@+id/edtPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword" />
+                    android:importantForAutofill="yes"
+                    android:inputType="textPassword"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutConfirmPassword"
+                android:id="@+id/layoutSignUpConfirmPassword"
                 style="@style/Widget.FoodOrder.TextInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,7 +113,9 @@
                     android:id="@+id/edtConfirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword" />
+                    android:importantForAutofill="yes"
+                    android:inputType="textPassword"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -113,13 +123,13 @@
                 style="@style/Widget.FoodOrder.PrimaryButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:text="@string/signup_create_account" />
+                android:layout_marginTop="20dp"
+                android:text="@string/signup_button" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="20dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -145,43 +155,20 @@
                     android:background="@color/divider_subtle" />
             </LinearLayout>
 
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoogle"
+                style="@style/Widget.FoodOrder.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnGoogle"
-                    style="@style/Widget.FoodOrder.OutlinedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/signup_google"
-                    android:textColor="@color/colorTextPrimary"
-                    app:backgroundTint="@color/white"
-                    app:icon="@drawable/ic_google"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="18dp"
-                    app:iconTint="@null" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFacebook"
-                    style="@style/Widget.FoodOrder.OutlinedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:text="@string/signup_facebook"
-                    android:textColor="@color/colorTextPrimary"
-                    app:backgroundTint="@color/white"
-                    app:icon="@drawable/ic_facebook"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="18dp"
-                    app:iconTint="@null" />
-            </LinearLayout>
+                android:text="Tiếp tục với Google"
+                android:textColor="@color/colorTextPrimary"
+                app:backgroundTint="@color/white"
+                app:icon="@drawable/ic_google"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconSize="20dp"
+                app:iconTint="@null" />
 
             <TextView
                 android:id="@+id/tvLoginPrompt"
@@ -189,9 +176,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="24dp"
+                android:clickable="true"
+                android:focusable="true"
                 android:text="@string/signup_login_prompt"
                 android:textColor="@color/colorPrimary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

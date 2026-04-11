@@ -21,6 +21,10 @@ public class AuthViewModel {
         return authRepository.login(email, password);
     }
 
+    public Task<User> signInWithGoogle(String idToken) {
+        return authRepository.signInWithGoogle(idToken);
+    }
+
     public Task<User> getCurrentUserProfile() {
         return authRepository.getCurrentUserProfile();
     }

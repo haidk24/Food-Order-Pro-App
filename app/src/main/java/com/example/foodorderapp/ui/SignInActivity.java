@@ -2,10 +2,13 @@ package com.example.foodorderapp.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -15,6 +18,12 @@ import com.example.foodorderapp.R;
 import com.example.foodorderapp.data.model.User;
 import com.example.foodorderapp.ui.admin.AdminActivity;
 import com.example.foodorderapp.viewModel.AuthViewModel;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
@@ -26,9 +35,28 @@ public class SignInActivity extends AppCompatActivity {
     private TextInputEditText edtSignInPassword;
     private MaterialButton btnSignIn;
     private MaterialButton btnGoogle;
-    private MaterialButton btnFacebook;
     private CircularProgressIndicator signInProgress;
     private AuthViewModel authViewModel;
+    private GoogleSignInClient mGoogleSignInClient;
+
+    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    Intent data = result.getData();
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                    try {
+                        GoogleSignInAccount account = task.getResult(ApiException.class);
+                        if (account != null) {
+                            firebaseAuthWithGoogle(account.getIdToken());
+                        }
+                    } catch (ApiException e) {
+                        Log.w("GoogleSignIn", "Google sign in failed", e);
+                        Toast.makeText(this, "Đăng nhập Google thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +69,6 @@ public class SignInActivity extends AppCompatActivity {
         edtSignInPassword = findViewById(R.id.edtSignInPassword);
         btnSignIn = findViewById(R.id.btnSignIn);
         btnGoogle = findViewById(R.id.btnGoogle);
-        btnFacebook = findViewById(R.id.btnFacebook);
         signInProgress = findViewById(R.id.signInProgress);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -50,23 +77,35 @@ public class SignInActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Cấu hình Google Sign In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
         btnSignIn.setOnClickListener(v -> attemptSignIn());
 
         findViewById(R.id.tvGoToSignUp).setOnClickListener(
                 v -> startActivity(new Intent(SignInActivity.this, SignUpActivity.class))
         );
 
-        btnGoogle.setOnClickListener(v -> Toast.makeText(
-                SignInActivity.this,
-                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
-                Toast.LENGTH_SHORT
-        ).show());
+        btnGoogle.setOnClickListener(v -> {
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            googleSignInLauncher.launch(signInIntent);
+        });
+    }
 
-        btnFacebook.setOnClickListener(v -> Toast.makeText(
-                SignInActivity.this,
-                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
-                Toast.LENGTH_SHORT
-        ).show());
+    private void firebaseAuthWithGoogle(String idToken) {
+        setLoading(true);
+        authViewModel.signInWithGoogle(idToken).addOnCompleteListener(task -> {
+            setLoading(false);
+            if (task.isSuccessful()) {
+                handleLoginSuccess(task.getResult());
+            } else {
+                Toast.makeText(this, "Xác thực với hệ thống thất bại", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -83,7 +122,6 @@ public class SignInActivity extends AppCompatActivity {
                 });
             }
         } catch (IllegalStateException ignored) {
-            // Firebase is optional in local/dev builds without google-services.json.
         }
     }
 
@@ -111,7 +149,6 @@ public class SignInActivity extends AppCompatActivity {
             Toast.makeText(this, "Không thể lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
             return;
         }
-
         navigateByRole(user.getRole());
     }
 
@@ -122,7 +159,8 @@ public class SignInActivity extends AppCompatActivity {
         if ("admin".equals(normalizedRole)) {
             intent = new Intent(SignInActivity.this, AdminActivity.class);
         } else if ("restaurant".equals(normalizedRole)) {
-            intent = new Intent(SignInActivity.this, MenuActivity.class);
+            // Cần đảm bảo có MenuActivity hoặc thay bằng MainActivity
+            intent = new Intent(SignInActivity.this, MainActivity.class); 
         } else {
             intent = new Intent(SignInActivity.this, MainActivity.class);
         }
@@ -161,6 +199,5 @@ public class SignInActivity extends AppCompatActivity {
         }
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
-        btnFacebook.setEnabled(!isLoading);
     }
 }
