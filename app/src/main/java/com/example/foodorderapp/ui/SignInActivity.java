@@ -2,10 +2,13 @@ package com.example.foodorderapp.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -15,6 +18,14 @@ import com.example.foodorderapp.R;
 import com.example.foodorderapp.data.model.User;
 import com.example.foodorderapp.ui.admin.AdminActivity;
 import com.example.foodorderapp.viewModel.AuthViewModel;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
@@ -29,6 +40,36 @@ public class SignInActivity extends AppCompatActivity {
     private MaterialButton btnFacebook;
     private CircularProgressIndicator signInProgress;
     private AuthViewModel authViewModel;
+    private GoogleSignInClient mGoogleSignInClient;
+
+    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                Intent data = result.getData();
+                if (data == null) {
+                    if (result.getResultCode() == RESULT_CANCELED) {
+                        Toast.makeText(this, "Bạn đã hủy đăng nhập Google", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Không nhận được dữ liệu đăng nhập Google", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    String idToken = account != null ? account.getIdToken() : null;
+                    if (idToken == null || idToken.trim().isEmpty()) {
+                        Toast.makeText(this, "Không lấy được token Google", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    firebaseAuthWithGoogle(idToken);
+                } catch (ApiException e) {
+                    Log.w("GoogleSignIn", "Google sign in failed. resultCode=" + result.getResultCode() + ", code=" + e.getStatusCode(), e);
+                    Toast.makeText(this, getGoogleErrorMessage(e), Toast.LENGTH_LONG).show();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,17 +91,30 @@ public class SignInActivity extends AppCompatActivity {
             return insets;
         });
 
+        try {
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken("171195324246-n99qs1826toqepd1pi1fcolb2vj19onp.apps.googleusercontent.com") // Tuyệt đối không dùng Android Client ID
+                    .requestEmail()
+                    .build();
+            mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        } catch (Exception e) {
+            Log.e("GoogleSignIn", "Lỗi cấu hình Google Sign In", e);
+        }
+
         btnSignIn.setOnClickListener(v -> attemptSignIn());
 
         findViewById(R.id.tvGoToSignUp).setOnClickListener(
                 v -> startActivity(new Intent(SignInActivity.this, SignUpActivity.class))
         );
 
-        btnGoogle.setOnClickListener(v -> Toast.makeText(
-                SignInActivity.this,
-                "Tính năng đăng nhập mạng xã hội sẽ cập nhật sau",
-                Toast.LENGTH_SHORT
-        ).show());
+        btnGoogle.setOnClickListener(v -> {
+            if (mGoogleSignInClient == null) {
+                Toast.makeText(this, "Google Sign-In chưa được cấu hình đúng", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            googleSignInLauncher.launch(signInIntent);
+        });
 
         btnFacebook.setOnClickListener(v -> Toast.makeText(
                 SignInActivity.this,
@@ -102,6 +156,23 @@ public class SignInActivity extends AppCompatActivity {
             } else {
                 String error = task.getException() != null ? task.getException().getMessage() : "Đăng nhập thất bại";
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        if (idToken == null || idToken.trim().isEmpty()) {
+            Toast.makeText(this, "Token Google không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        setLoading(true);
+        authViewModel.signInWithGoogle(idToken).addOnCompleteListener(task -> {
+            setLoading(false);
+            if (task.isSuccessful()) {
+                handleLoginSuccess(task.getResult());
+            } else {
+                String error = task.getException() != null ? task.getException().getMessage() : "Xác thực thất bại";
+                Toast.makeText(this, "Đăng nhập Google lỗi: " + error, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -162,5 +233,22 @@ public class SignInActivity extends AppCompatActivity {
         btnSignIn.setEnabled(!isLoading);
         btnGoogle.setEnabled(!isLoading);
         btnFacebook.setEnabled(!isLoading);
+    }
+
+    private String getGoogleErrorMessage(ApiException e) {
+        int code = e.getStatusCode();
+        if (code == GoogleSignInStatusCodes.SIGN_IN_CANCELLED || code == CommonStatusCodes.CANCELED) {
+            return "Bạn đã hủy đăng nhập Google";
+        }
+        if (code == 12500 || code == CommonStatusCodes.DEVELOPER_ERROR) {
+            return "Cấu hình Google Sign-In chưa đúng (SHA-1/Web Client ID)";
+        }
+        if (code == CommonStatusCodes.NETWORK_ERROR) {
+            return "Lỗi mạng khi đăng nhập Google";
+        }
+        if (code == CommonStatusCodes.SIGN_IN_REQUIRED) {
+            return "Vui lòng chọn tài khoản Google";
+        }
+        return "Đăng nhập Google thất bại (code " + code + ")";
     }
 }

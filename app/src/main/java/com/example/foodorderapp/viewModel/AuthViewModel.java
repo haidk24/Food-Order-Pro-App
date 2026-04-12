@@ -32,4 +32,8 @@ public class AuthViewModel {
     public Task<Void> updateFields(String uid, Map<String, Object> updates) {
         return authRepository.updateFields(uid, updates);
     }
+
+    public Task<User> signInWithGoogle(String idToken) {
+        return authRepository.signInWithGoogle(idToken);
+    }
 }

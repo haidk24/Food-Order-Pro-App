@@ -30,4 +30,8 @@ public class AuthRepository {
     public Task<User> getCurrentUserProfile() {
         return authFirebaseDataSource.getCurrentUserProfile();
     }
+
+    public Task<User> signInWithGoogle(String idToken) {
+        return authFirebaseDataSource.signInWithGoogle(idToken);
+    }
 }
